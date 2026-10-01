@@ -43,9 +43,9 @@
         }
         .app {
             position: relative; z-index:1;
-            max-width: 960px; margin:0 auto; padding:48px 24px;
+            max-width: 1000px; margin:0 auto; padding:48px 24px;
         }
-        header { text-align:center; margin-bottom:48px; }
+        header { text-align:center; margin-bottom:40px; }
         header h1 {
             font-family:'Orbitron',sans-serif;
             font-size: clamp(28px,6vw,52px);
@@ -57,7 +57,7 @@
         header p { font-size:13px; color:var(--text-dim); letter-spacing:0.2em; font-weight:300; }
         .section { margin-bottom:20px; }
         textarea {
-            width:100%; height:90px;
+            width:100%; height:96px;
             background:var(--surface); border:1px solid var(--border);
             border-radius:var(--radius); color:var(--accent);
             font-family:'JetBrains Mono',monospace; font-size:16px;
@@ -66,21 +66,24 @@
         }
         textarea:focus { border-color:var(--accent-dim); box-shadow:0 0 30px var(--accent-glow); }
         textarea::placeholder { color:var(--text-dim); }
-        .controls { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
-        .style-selector { display:flex; gap:6px; flex-wrap:wrap; }
+        .controls { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+        .style-selector { display:flex; gap:6px; flex-wrap:wrap; max-width:560px; }
         .style-btn {
             background:var(--surface); border:1px solid var(--border);
             border-radius:6px; color:var(--text-dim);
             font-family:'JetBrains Mono',monospace; font-size:12px;
-            padding:8px 14px; cursor:pointer; transition:all .25s; white-space:nowrap;
+            padding:8px 12px; cursor:pointer; transition:all .25s; white-space:nowrap;
         }
         .style-btn:hover { color:var(--text); border-color:#333; }
         .style-btn.active { background:var(--accent-glow); border-color:var(--accent-dim); color:var(--accent); }
+        .style-btn small { display:block; font-size:9px; opacity:.55; letter-spacing:.05em; margin-top:2px; }
+        .sliders { display:flex; flex-direction:column; gap:10px; min-width:230px; }
         .slider-group { display:flex; align-items:center; gap:10px; }
-        .slider-group label { font-size:12px; color:var(--text-dim); }
+        .slider-group label { font-size:12px; color:var(--text-dim); min-width:56px; }
+        .slider-group output { font-size:11px; color:var(--accent-dim); min-width:34px; text-align:right; }
         input[type="range"] {
-            -webkit-appearance:none; appearance:none;
-            width:100px; height:3px; background:var(--border);
+            -webkit-appearance:none; appearance:none; flex:1;
+            height:3px; background:var(--border);
             border-radius:2px; outline:none;
         }
         input[type="range"]::-webkit-slider-thumb {
@@ -88,12 +91,17 @@
             border-radius:50%; background:var(--accent); cursor:pointer;
             box-shadow:0 0 10px var(--accent-glow);
         }
+        .toggles { display:flex; gap:14px; flex-wrap:wrap; padding-left:2px; }
+        .toggle { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-dim); cursor:pointer; user-select:none; }
+        .toggle input { accent-color:var(--accent-dim); cursor:pointer; }
         .output-box { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
         .output-bar {
-            display:flex; justify-content:space-between; align-items:center;
+            display:flex; justify-content:space-between; align-items:center; gap:12px;
             padding:10px 16px; border-bottom:1px solid var(--border); background:var(--surface-2);
         }
-        .output-bar span { font-size:11px; color:var(--text-dim); letter-spacing:.15em; text-transform:uppercase; }
+        .output-bar .meta { font-size:11px; color:var(--text-dim); letter-spacing:.12em; text-transform:uppercase; }
+        .output-bar .meta b { color:var(--accent-dim); font-weight:400; }
+        .bar-actions { display:flex; gap:8px; }
         .copy-btn {
             background:none; border:1px solid var(--border); border-radius:4px;
             color:var(--text-dim); font-family:'JetBrains Mono',monospace;
@@ -101,11 +109,16 @@
         }
         .copy-btn:hover { border-color:var(--accent-dim); color:var(--accent); }
         .copy-btn.done { border-color:var(--accent); color:var(--accent); }
-        .output-scroll { padding:16px; overflow:auto; max-height:480px; }
+        .warn {
+            display:none; padding:8px 16px; font-size:11px; line-height:1.5;
+            color:#ffcc66; background:rgba(255,204,102,0.06); border-bottom:1px solid var(--border);
+        }
+        .warn.show { display:block; }
+        .output-scroll { padding:16px; overflow:auto; max-height:520px; }
         #output {
-            font-family:'JetBrains Mono','Cascadia Code','Consolas','Courier New',monospace;
-            font-size:14px; line-height:1.15; color:var(--accent);
-            white-space:pre; margin:0; min-height:84px;
+            font-family:'JetBrains Mono','Cascadia Mono','Cascadia Code','Consolas','Courier New',monospace;
+            font-size:13px; line-height:1.12; color:var(--accent);
+            white-space:pre; margin:0; min-height:84px; tab-size:4;
         }
         .ph { color:var(--text-dim); font-size:13px; animation:pulse 2s ease infinite; }
         @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.8} }
@@ -118,8 +131,8 @@
         @media(max-width:600px){
             .app{padding:24px 16px}
             .controls{flex-direction:column;align-items:stretch}
-            .style-selector{justify-content:center}
-            .slider-group{justify-content:center}
+            .style-selector{justify-content:center;max-width:none}
+            .sliders{min-width:0}
             #output{font-size:8px}
         }
     </style>
@@ -128,40 +141,60 @@
 <div class="app">
     <header>
         <h1>TEXT ART</h1>
-        <p>文字 → 艺术字 ｜ 英文 · 中文 · 日語</p>
+        <p>文字 → 艺术字 ｜ 英文 · 中文 · 日本語</p>
     </header>
     <div class="section">
-        <textarea id="inputText" placeholder="在此输入文字...">HELLO</textarea>
+        <textarea id="inputText" placeholder="在此输入文字（支持多行）...">HELLO</textarea>
     </div>
     <div class="section controls">
-        <div class="style-selector">
-            <button class="style-btn active" data-style="ansi">◆ 装饰体</button>
-            <button class="style-btn" data-style="block">█ 方块体</button>
-            <button class="style-btn" data-style="shade">▓ 渐变体</button>
-            <button class="style-btn" data-style="braille">⣿ 点阵体</button>
+        <div class="style-selector" id="styleSelector">
+            <button class="style-btn active" data-style="ansi">◆ 装饰体<small>ANSI SHADOW</small></button>
+            <button class="style-btn" data-style="solid">█ 方块体<small>SOLID</small></button>
+            <button class="style-btn" data-style="shade">▓ 渐变体<small>SHADE</small></button>
+            <button class="style-btn" data-style="detail">░ 精细体<small>DETAIL</small></button>
+            <button class="style-btn" data-style="braille">⣿ 点阵体<small>BRAILLE</small></button>
         </div>
-        <div class="slider-group">
-            <label>密度</label>
-            <input type="range" id="density" min="1" max="10" value="5">
+        <div class="sliders">
+            <div class="slider-group">
+                <label>宽度预算</label>
+                <input type="range" id="cols" min="16" max="400" value="110">
+                <output id="colsOut">110</output>
+            </div>
+            <div class="slider-group">
+                <label>对比度</label>
+                <input type="range" id="gamma" min="50" max="200" value="100">
+                <output id="gammaOut">1.00</output>
+            </div>
+            <div class="toggles">
+                <label class="toggle"><input type="checkbox" id="invert"> 反色</label>
+                <label class="toggle"><input type="checkbox" id="tight"> 紧凑字距</label>
+            </div>
         </div>
     </div>
     <div class="section output-box">
         <div class="output-bar">
-            <span>OUTPUT</span>
-            <button class="copy-btn" id="copyBtn">复制</button>
+            <span class="meta" id="meta">OUTPUT</span>
+            <div class="bar-actions">
+                <button class="copy-btn" id="downloadBtn">下载 .txt</button>
+                <button class="copy-btn" id="copyBtn">复制</button>
+            </div>
         </div>
+        <div class="warn" id="warn"></div>
         <div class="output-scroll">
             <pre id="output"><span class="ph">输入文字后自动生成...</span></pre>
         </div>
     </div>
-    <footer><p>TEXT ART GENERATOR v1.0</p></footer>
+    <footer><p>TEXT ART GENERATOR v2.1 · GLYPH-ACCURATE RASTERIZER</p></footer>
 </div>
 
 <script>
 (function(){
 'use strict';
 
-/* ======================== ANSI SHADOW FONT ======================== */
+/* ============================================================================
+   1. BITMAP GLYPH CATALOG — ANSI Shadow font (7 cols x 6 rows per glyph)
+   Rows are padded to a uniform width at load time, so a few ragged rows are ok.
+   ========================================================================== */
 const RAW={
 'A':[' ██████╗ ','██╔══██╗','███████║','██╔══██║','██║  ██║','╚═╝  ╚═╝'],
 'B':['██████╗ ','██╔══██╗','██████╔╝','██╔══██╗','██████╔╝','╚═════╝ '],
@@ -189,6 +222,32 @@ const RAW={
 'X':['██╗  ██╗','╚██╗██╔╝',' ╚███╔╝ ',' ██╔██╗ ','██╔╝ ██╗','╚═╝  ╚═╝'],
 'Y':['██╗   ██╗','╚██╗ ██╔╝',' ╚████╔╝ ','  ╚██╔╝  ','   ██║   ','   ╚═╝   '],
 'Z':['███████╗','╚════██║','  ███╔╝ ',' ███╔╝  ','███████╗','╚══════╝'],
+'a':['        ',' █████╗ ','██╔══██╗','███████║','██╔══██║','╚═╝  ╚═╝'],
+'b':['██╗     ','██║     ','██████╗ ','██╔══██╗','██║  ██║','╚═════╝ '],
+'c':['       ',' ██████╗','██╔════╝','██║     ','╚██████╗',' ╚═════╝'],
+'d':['     ██╗','     ██║',' ██████║','██╔══██║','██║  ██║','╚██████║'],
+'e':['       ',' ██████╗','██╔═══██╗','███████╔╝','██╔════╝ ','╚██████╗'],
+'f':['  █████╗',' ██╔═══╝','██████╗ ','██╔═══╝ ','██║     ','╚═╝     '],
+'g':['       ',' ██████╗','██╔═══██╗','╚██████╔╝',' ╚════██╗',' ██████╔╝'],
+'h':['██╗     ','██║     ','██████╗ ','██╔══██╗','██║  ██║','╚═╝  ╚═╝'],
+'i':[' ██╗',' ╚═╝',' ██╗',' ██║',' ██║',' ╚═╝'],
+'j':['    ██╗','    ╚═╝','    ██╗','    ██║','██  ██║','╚█████╔╝'],
+'k':['██╗     ','██║     ','██║  ██╗','██████╔╝','██╔══██╗','╚═╝  ╚═╝'],
+'l':['██╗','██║','██║','██║','██║','╚═╝'],
+'m':['        ','███████╗','████████╗','██╔══██║','██║  ██║','╚═╝  ╚═╝'],
+'n':['       ','██████╗ ','██╔══██╗','██║  ██║','██║  ██║','╚═╝  ╚═╝'],
+'o':['      ',' █████╗','██╔══██╗','██║  ██║','██║  ██║','╚█████╔╝'],
+'p':['       ','██████╗ ','██╔══██╗','██████╔╝','██╔═══╝ ','██║     '],
+'q':['       ',' ██████╗','██╔═══██╗','╚██████║',' ╚═══██║','     ██║'],
+'r':['      ','██████╗ ','██╔══██╗','██║  ╚═╝','██║     ','╚═╝     '],
+'s':['      ','███████╗','██╔════╝','███████╗','╚════██║','███████║'],
+'t':[' ██╗    ','██████╗ ','╚═██╔═╝ ','  ██║   ','  ██║   ','  ╚═╝   '],
+'u':['       ','██╗  ██╗','██║  ██║','██║  ██║','╚██████║',' ╚═════╝'],
+'v':['      ','██╗  ██╗','██║  ██║','╚██╗██╔╝',' ╚███╔╝ ','  ╚══╝  '],
+'w':['        ','██╗  ██╗ ','██║  ██║ ','██║ █╗ ██║','╚███╔███╔╝',' ╚══╝╚══╝ '],
+'x':['      ','██╗ ██╗','╚███╔╝','██╔██╗','██╔╝██╗','╚═╝ ╚═╝'],
+'y':['       ','██╗  ██╗','██║  ██║','╚█████╔╝',' ╚═══██╗',' █████╔╝'],
+'z':['      ','███████╗','╚══███╔╝',' ███╔╝ ','███████╗','╚══════╝'],
 '0':[' ██████╗ ','██╔═══██╗','██║   ██║','██║   ██║','╚██████╔╝',' ╚═════╝ '],
 '1':['  ██╗  ','████║  ','╚██║   ',' ██║   ',' ██║   ',' ╚═╝   '],
 '2':['██████╗ ','╚════██╗',' █████╔╝','██╔═══╝ ','███████╗','╚══════╝'],
@@ -200,203 +259,583 @@ const RAW={
 '8':[' ██████╗ ','██╔══██╗ ','╚█████╔╝ ','██╔══██╗ ','╚█████╔╝ ',' ╚════╝  '],
 '9':[' ██████╗ ','██╔══██╗ ','╚██████║ ',' ╚═══██║ ',' █████╔╝ ',' ╚════╝  '],
 ' ':['  ','  ','  ','  ','  ','  '],
-'.':[' ','   ','   ','   ','██╗','╚═╝'],
-'!':['██╗','██║','██║','╚═╝','   ','██╗'],
-'?':['████╗ ','╚══██╗','  ██╔╝','  ╚═╝ ','      ','  ██╗ '],
-'-':['      ','      ','██████','      ','      ','      '],
-'+':['      ','  ██  ','██████','  ██  ','      ','      '],
-'=':['      ','██████','      ','██████','      ','      '],
-'/':['    ██','   ██ ','  ██  ',' ██   ','██    ','      '],
-':':['  ','  ','██','  ','██','  '],
-',':['   ','   ','   ','   ','██╗','╚█╝'],
-"'":['██','  ','  ','  ','  ','  '],
-'"':['█ █','   ','   ','   ','   ','   '],
-'(':[' ██','██ ','██ ','██ ',' ██','  █'],
-')':['██ ',' ██',' ██',' ██','██ ','█  '],
-'@':[' ██████╗ ','██╔═══██╗','██║██║██║','██║╚████║','╚██████╔╝',' ╚═════╝ '],
-'#':[' ██ ██ ','███████',' ██ ██ ','███████',' ██ ██ ','       '],
-'*':['      ','▄ ██▄ ',' ████ ','▀ ██ ▀','      ','      '],
-'_':['      ','      ','      ','      ','      ','██████'],
-'<':['   ██','  ██ ',' ██  ','  ██ ','   ██','      '],
-'>':['██   ',' ██  ','  ██ ',' ██  ','██   ','      '],
+'.':['     ','     ','     ','     ',' ██╗ ',' ╚═╝ '],
+',':['     ','     ','     ','     ',' ██╗ ','╚█╔╝ '],
+':':['     ',' ██╗ ',' ╚═╝ ','     ',' ██╗ ',' ╚═╝ '],
+';':['     ',' ██╗ ',' ╚═╝ ','     ',' ██╗ ','╚█╔╝ '],
+'!':[' ██╗ ',' ██║ ',' ██║ ',' ╚═╝ ',' ██╗ ',' ╚═╝ '],
+'?':['██████╗ ','╚════██╗',' █████╔╝',' ╚═══╝  ',' ██╗    ',' ╚═╝    '],
+'-':['       ','       ','███████','       ','       ','       '],
+'_':['       ','       ','       ','       ','       ','███████'],
+'+':['       ','  ██╗  ','███████','╚═██╔═╝','  ╚═╝  ','       '],
+'=':['       ','███████','╚══════','███████','╚══════','       '],
+'*':['       ','▄ ██▄  ',' ████  ','▀ ██ ▀ ','       ','       '],
+'/':['    ██╗','   ██╔╝','  ██╔╝ ',' ██╔╝  ','██╔╝   ','╚═╝    '],
+'\\':['██╗    ','╚██╗   ',' ╚██╗  ','  ╚██╗ ','   ╚██╗','    ╚═╝'],
+'|':[' ██╗ ',' ██║ ',' ██║ ',' ██║ ',' ██║ ',' ╚═╝ '],
+'(':[' ██╗','██╔╝','██║ ','██║ ','██╗ ','╚═╝ '],
+')':['██╗ ','╚██╗',' ██║',' ██║',' ██║',' ╚═╝'],
+'[':['████╗','██╔═╝','██║  ','██║  ','████╗','╚═══╝'],
+']':['████╗','╚═██║','  ██║','  ██║','████║','╚═══╝'],
+'{':['  ██╗',' ██╔╝','██╔╝ ','╚██╗ ',' ██╗ ','  ╚═╝'],
+'}':['██╗  ','╚██╗ ',' ╚██╗',' ██╔╝','██╔╝ ','╚═╝  '],
+'<':['   ██╗','  ██╔╝',' ██╔╝ ','██╔╝  ','╚═╝   ','      '],
+'>':['██╗   ','╚██╗  ',' ╚██╗ ','  ╚██╗','   ╚═╝','      '],
+"'":[' ██╗ ',' ╚═╝ ','     ','     ','     ','     '],
+'"':['██╗ ██╗','╚═╝ ╚═╝','       ','       ','       ','       '],
+'`':['██╗   ',' ╚██╗ ','      ','      ','      ','      '],
+'~':['       ',' ████╗ ','██╔═██╗','╚═╝ ╚═╝','       ','       '],
+'^':['  ██╗  ',' ██╔██╗','██╔╝╚██','╚═╝  ╚═╝','       ','       '],
+'@':[' ██████╗ ','██╔═══██╗','██║██╗██║','██║╚████║','╚██████╔╝',' ╚═════╝ '],
+'#':[' ██╗ ██╗ ','███████╗','╚═██╔═██╗','███████║','╚═██╔═██║','  ╚═╝ ╚═╝'],
+'$':['  ██╗  ',' ██████╗','██╔═██╔╝','╚█████╗ ',' ██╔═██╗',' ╚████╔╝'],
+'%':['██╗  ██╗','╚═╝ ██╔╝','  ██╔╝ ',' ██╔╝  ','██╔╝ ██╗','╚═╝  ╚═╝'],
+'&':[' ████╗  ','██╔══██╗','╚█████╔╝','██╔═██╗ ','╚█████╔╝',' ╚════╝ ']
 };
 
-// Normalize
+/* Uniform-width normalization: every glyph in a single-row style must have the
+   same advance width or the letters shear apart. */
 const FONT={};
-for(const[k,v] of Object.entries(RAW)){
-    const m=Math.max(...v.map(l=>l.length));
-    FONT[k]=v.map(l=>l.padEnd(m));
-}
-
-/* ======================== CANVAS UTILITIES ======================== */
-
-function renderCanvas(text,fontSize){
-    const c=document.createElement('canvas'),x=c.getContext('2d');
-    const f=`bold ${fontSize}px "Noto Sans SC","Noto Sans JP","Microsoft YaHei","Hiragino Sans","Malgun Gothic",sans-serif`;
-    x.font=f;
-    const lines=text.split('\n');
-    const lh=Math.ceil(fontSize*1.35);
-    let mw=0;
-    for(const l of lines) mw=Math.max(mw,x.measureText(l).width);
-    c.width=Math.ceil(mw)+4; c.height=lh*lines.length+4;
-    if(c.width<2)c.width=2; if(c.height<2)c.height=2;
-    x.font=f; x.fillStyle='white'; x.textBaseline='top';
-    for(let i=0;i<lines.length;i++) x.fillText(lines[i],2,i*lh+2);
-    return{canvas:c,img:x.getImageData(0,0,c.width,c.height)};
-}
-
-function avgB(img,x1,y1,w,h){
-    const{data,width:cw,height:ch}=img;
-    let t=0,n=0;
-    const xa=Math.max(0,Math.floor(x1)),ya=Math.max(0,Math.floor(y1));
-    const xb=Math.min(cw,Math.floor(x1+w)),yb=Math.min(ch,Math.floor(y1+h));
-    for(let y=ya;y<yb;y++)for(let x=xa;x<xb;x++){
-        const i=(y*cw+x)*4;
-        t+=(data[i]+data[i+1]+data[i+2])/3*(data[i+3]/255);n++;
+(function(){
+    const reps={A:7,M:11,T:9,W:11};
+    const REFW={};                                  // style width signature -> canonical width
+    for(const k of Object.keys(reps)){
+        const g=RAW[k];
+        if(g) REFW[g.join('|').length]=Math.max(...g.map(l=>l.length));
     }
-    return n>0?t/n:0;
+    for(const [k,v] of Object.entries(RAW)){
+        const sig=v.join('|').length;
+        let w=REFW[sig];
+        if(w===undefined){ w=Math.max(...v.map(l=>l.length)); REFW[sig]=w; }
+        FONT[k]=v.map(l=>l.padEnd(w));
+    }
+})();
+
+/* ============================================================================
+   2. TEXT / GRAPHEME UTILITIES
+   ========================================================================== */
+const SEG=(typeof Intl!=='undefined'&&Intl.Segmenter)?new Intl.Segmenter('und',{granularity:'grapheme'}):null;
+
+function graphemes(str){
+    if(SEG){ const out=[]; for(const s of SEG.segment(str)) out.push(s.segment); return out; }
+    const out=[];
+    for(const ch of str){
+        const p=out[out.length-1];
+        if(p&&/[\u200d\ufe0e\ufe0f\u{1f3fb}-\u{1f3ff}]/u.test(ch)) out[out.length-1]=p+ch;
+        else out.push(ch);
+    }
+    return out;
+}
+function cp(ch){ return ch.codePointAt(0); }
+/** Whitespace that should advance without drawing. */
+function isBlank(g){ return /^[\s\u3000\u200b]+$/.test(g); }
+/** Full-width / square scripts (CJK, kana, hangul, emoji). */
+function isWide(ch){
+    const c=cp(ch);
+    return (c>=0x1100&&c<=0x115f)||(c>=0x2e80&&c<=0xa4cf)||(c>=0xac00&&c<=0xd7a3)||
+           (c>=0xf900&&c<=0xfaff)||(c>=0xfe30&&c<=0xfe6f)||(c>=0xff01&&c<=0xff60)||
+           (c>=0xffe0&&c<=0xffe6)||(c>=0x1f000)||(c>=0x20000&&c<=0x3fffd);
+}
+/** Ink rows a glyph needs (source-space): CJK/emoji are square, Latin is short. */
+function inkRows(g){ return (cp(g)>=0x1f000||isWide(g))?8:6; }
+const CJK_FONT='700 100px "Noto Sans SC","Noto Sans JP","Source Han Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans","Malgun Gothic","Segoe UI","Arial",sans-serif';
+const LATIN_FONT='700 100px "JetBrains Mono","Cascadia Mono","Consolas","DejaVu Sans Mono","Segoe UI",sans-serif';
+const EMOJI_FONT='700 100px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Sans SC",sans-serif';
+const REPLACEMENT='\uFFFD';                       // the font's "missing glyph" probe
+function fontStackFor(g){
+    const c=cp(g);
+    if(c>=0x1f000||(c>=0x2190&&c<=0x2bff)||(c>=0x1f1e6)) return EMOJI_FONT;
+    if(c<128) return LATIN_FONT;
+    return CJK_FONT;
+}
+function lineMode(line){
+    let cjk=0,latin=0;
+    for(const g of graphemes(line)){
+        if(isBlank(g)) continue;
+        if(cp(g)>=0x1f000||isWide(g)) cjk++; else latin++;
+    }
+    if(cjk===0) return 'latin';
+    if(latin===0||cjk*2>=latin) return 'cjk';
+    return 'mixed';
 }
 
-function charToFallback(ch){
-    const R=6,cv=document.createElement('canvas'),x=cv.getContext('2d');
-    const sz=48,f=`bold ${sz}px "Noto Sans SC","Noto Sans JP","Microsoft YaHei",sans-serif`;
-    x.font=f;
-    const w=Math.max(Math.ceil(x.measureText(ch).width)+2,4);
-    const h=Math.ceil(sz*1.3);
-    cv.width=w;cv.height=h;
-    x.font=f;x.fillStyle='white';x.textBaseline='top';
-    x.fillText(ch,1,sz*0.1);
-    const img=x.getImageData(0,0,w,h);
-    const cs=h/R,cols=Math.max(1,Math.round(w/cs));
-    const res=[];
-    for(let r=0;r<R;r++){
-        let ln='';
-        for(let c=0;c<cols;c++){
-            ln+=avgB(img,c*cs,r*cs,cs,cs)>120?'██':'  ';
+/* ============================================================================
+   3. RASTERIZER — text -> luminance canvas
+   Every glyph is measured with REAL font metrics (actualBoundingBox*) and scaled
+   so its cap height fills the cell, so ascenders / descenders / baselines stay
+   consistent across scripts and each line keeps its true proportion.
+   ========================================================================== */
+const MCTX=document.createElement('canvas').getContext('2d');
+const WIDTH_CACHE=new Map();
+const SUPPORT_CACHE=new Map();
+
+/** Reject characters whose glyph is missing from the installed fonts. */
+function supported(g){
+    if(cp(g)<128) return true;
+    let ok=SUPPORT_CACHE.get(g);
+    if(ok===undefined){
+        if(cp(g)>=0x1f000){ ok=true; }
+        else if(cp(g)<0x2e80||(cp(g)>=0xff01&&cp(g)<=0xff60)){
+            MCTX.font=CJK_FONT;
+            const bad=MCTX.measureText(REPLACEMENT).width;
+            const w=MCTX.measureText(g).width;
+            ok=w>0.5&&Math.abs(w-bad)>0.5;
+        }else{
+            // CJK ideographs: Windows draws .notdef as a blank advance, so a
+            // zero-ink probe is the reliable "missing" signature.
+            MCTX.font=CJK_FONT;
+            const m=MCTX.measureText(g);
+            ok=(m.actualBoundingBoxAscent||0)+(m.actualBoundingBoxDescent||0)>0.5;
         }
-        res.push(ln);
+        SUPPORT_CACHE.set(g,ok);
     }
+    return ok;
+}
+
+/**
+ * Rasterize ONE line of text at a FIXED render resolution.
+ *
+ * Rendering resolution and output cell size are deliberately independent: the
+ * glyph master is rasterised at `scale` pixels per source row, and the caller
+ * samples it down to as many cells as the width budget wants. Coupling the two
+ * (making the font size follow the cell size) is what breaks the width slider —
+ * a smaller cell would shrink the glyph until nothing is left to sample.
+ *
+ * @param {{scale:number,measureOnly?:boolean,tight?:boolean}} opts  scale = px per
+ *        unit of alphabetic height; the caller solves it from the column budget
+ * @returns {{ctx:CanvasRenderingContext2D,W:number,H:number,pad:number,
+ *            unsupported:string[],units:number,lineW:number,inkH:number}}
+ */
+const RENDER_PX=4;                       // fallback scale when the caller has no budget
+const XHEIGHT_ROWS=5.05;                 // Latin alphabetic height, in source rows
+
+function rasterLine(line,opts){
+    const scale=Math.max(0.4,opts.scale||RENDER_PX);
+    const tight=!!opts.tight;
+    const glyphs=[];
+    const unsupported=[];
+    // Measure every glyph FIRST, with the same font stack used for drawing below, so
+    // the metrics and the painted result cannot disagree. Then ONE font size is
+    // derived from the tallest glyph on the line: scaling each glyph to its own
+    // ascent would give lowercase letters a larger size than capitals.
+    let ascMax=0, descMax=0, inkMinX=Infinity, inkMaxX=-Infinity;
+    for(const g of graphemes(line)){
+        if(isBlank(g)){ glyphs.push({g,blank:true}); continue; }
+        const font=fontStackFor(g);
+        if(!supported(g)) unsupported.push(g);
+        MCTX.font=font;
+        const m=MCTX.measureText(g);
+        const em={
+            asc:(m.actualBoundingBoxAscent||70)/100,
+            desc:(m.actualBoundingBoxDescent||0)/100,
+            left:Math.abs(m.actualBoundingBoxLeft||0)/100,
+            right:Math.abs(m.actualBoundingBoxRight||0)/100,
+            width:m.width/100,
+            need:isWide(g)||cp(g)>=0x1f000?1.0:0.55,     // advance floor, in em
+            bearing:tight?1.0:1.03,
+        };
+        glyphs.push({g,font,em});
+        ascMax=Math.max(ascMax,em.asc);
+        descMax=Math.max(descMax,em.desc);
+    }
+    if(ascMax<=0) ascMax=0.8;
+    // alphabetic height = XHEIGHT_ROWS source rows, shared by the whole line
+    const fs=XHEIGHT_ROWS*scale/ascMax;
+    let pen=0;
+    const items=glyphs.map(gl=>{
+        if(gl.blank){ const adv=scale*0.55; pen+=adv; return {g:gl.g,blank:true,adv,asc:0,desc:0,left:0,right:0}; }
+        const adv=Math.max(gl.em.width,gl.em.need)*fs*gl.em.bearing;
+        // Ink extent of this glyph. The glyph is painted at pen+left, so the canvas must
+        // be at least pen+adv+left wide — sizing it from the advance alone (or from a
+        // separately computed ink box) is what silently cropped the LAST glyph, because
+        // the bearing offset pushes its ink past the right edge.
+        inkMinX=Math.min(inkMinX,pen+gl.em.left*fs);
+        inkMaxX=Math.max(inkMaxX,pen+adv+gl.em.left*fs);
+        const it={g:gl.g,font:gl.font,fs,asc:gl.em.asc*fs,desc:gl.em.desc*fs,
+                  left:gl.em.left*fs,right:gl.em.right*fs,adv};
+        pen+=adv;
+        return it;
+    });
+    const maxAsc=Math.max(ascMax*fs,scale*0.5);
+    const inkBoxH=maxAsc+descMax*fs;                  // full ink box of the line
+    const pad=2;
+    if(!isFinite(inkMinX)){ inkMinX=0; inkMaxX=0; }
+    const lineW=Math.max(1,pen);
+    // width = pen travel + the widest left bearing + a margin on both sides
+    const bearingPad=Math.max(0,-inkMinX);
+    const inkW=Math.max(1,(inkMaxX-inkMinX)+pad);     // reported ink width, in master px
+    const W=Math.max(6,Math.ceil(lineW+bearingPad+pad*2));
+    const H=Math.max(6,Math.ceil(inkBoxH+pad*2));
+    // The text starts at `pad + bearingPad`, and the sampling grid uses that same origin,
+    // so cell c covers [origin + c*cellPx, origin + (c+1)*cellPx] and the last glyph is
+    // inside the grid by construction.
+    const origin=pad+bearingPad;
+    if(opts.measureOnly) return {pad,origin,W,H,unsupported,items,lineW,inkW,inkH:inkBoxH};
+    const cv=document.createElement('canvas');
+    cv.width=W; cv.height=H;
+    const ctx=cv.getContext('2d',{willReadFrequently:true});
+    ctx.clearRect(0,0,W,H);
+    ctx.textAlign='left';
+    ctx.textBaseline='alphabetic';
+    ctx.fillStyle='#fff';
+    const base0=pad+maxAsc;
+    let x=origin;
+    for(const it of items){
+        if(it.blank){ x+=it.adv; continue; }
+        // push the baseline down when a glyph would overflow the top (diacritics,
+        // tall CJK) instead of letting it clip
+        const top=base0-it.asc, bottom=base0+it.desc;
+        let base=base0;
+        if(top<pad) base+=pad-top;
+        if(bottom>H-pad) base-=bottom-(H-pad);
+        base=Math.max(pad+2,Math.min(H-pad-1,base));
+        const off=Math.max(0,(it.adv+it.left-it.right)/2);
+        ctx.font=it.font.replace('100px',it.fs+'px');
+        ctx.fillText(it.g,x+off,base);
+        x+=it.adv;
+    }
+    return {cv,ctx,pad,origin,W,H,unsupported,lineW,inkW,inkH:inkBoxH};
+}
+
+/* ============================================================================
+   4. SAMPLING — canvas -> luminance grid
+   Exact area-average box sampling (pixel coverage weights), so a thin stem keeps
+   its true ink mass instead of dissolving into grey.
+   ========================================================================== */
+/**
+ * canvas -> luminance grid.
+ * @param {number} [cellPx] side of one sampling cell in master px. When given, cell c
+ *   covers exactly [pad + c*cellPx, pad + (c+1)*cellPx] so the grid shares the ink
+ *   origin and the sampled cell count is deterministic. Omitted, the grid is stretched
+ *   to cover the whole interior (used by charArt for single glyphs).
+ */
+function sampleGrid(rast,cols,rows,cellPx){
+    const {W,H}=rast;
+    cols=Math.max(1,cols|0); rows=Math.max(1,rows|0);
+    const p=rast.pad||0;
+    // the grid shares the PAINT ORIGIN with the glyphs, so the last glyph is always
+    // inside the grid: cell c covers [origin + c*cw, origin + (c+1)*cw]
+    const ox=rast.origin===undefined?p:rast.origin;
+    const oy=p;
+    const cw=cellPx||((W-ox-p)/cols);
+    const rh=cellPx||((H-oy-p)/rows);
+    const img=rast.ctx.getImageData(0,0,W,H).data;
+    const heat=new Float32Array(cols*rows);
+    for(let r=0;r<rows;r++){
+        const y0=oy+r*rh, y1=oy+(r+1)*rh;
+        const ya=Math.max(0,Math.floor(y0)), yb=Math.min(H,Math.ceil(y1));
+        for(let c=0;c<cols;c++){
+            const x0=ox+c*cw, x1=ox+(c+1)*cw;
+            const xa=Math.max(0,Math.floor(x0)), xb=Math.min(W,Math.ceil(x1));
+            let acc=0,wt=0;
+            for(let py=ya;py<yb;py++){
+                const oy=Math.min(y1,py+1)-Math.max(y0,py);
+                if(oy<=0) continue;
+                const row=py*W;
+                for(let px=xa;px<xb;px++){
+                    const ox=Math.min(x1,px+1)-Math.max(x0,px);
+                    if(ox<=0) continue;
+                    const w=ox*oy;
+                    acc+=(img[(row+px)*4+3]/255)*w;
+                    wt+=w;
+                }
+            }
+            heat[r*cols+c]=wt>0?acc/wt:0;
+        }
+    }
+    return {heat,w:cols,h:rows};
+}
+function padGrid(g,cols){
+    if(g.w>=cols) return g;
+    const heat=new Float32Array(cols*g.h);
+    for(let r=0;r<g.h;r++)for(let c=0;c<g.w;c++) heat[r*cols+c]=g.heat[r*g.w+c];
+    return {heat,w:cols,h:g.h};
+}
+function trim(s){ return s.replace(/[ \u3000]+$/,''); }
+/**
+ * n blank rows of w columns. `where` picks which end they occupy: 'top' keeps a
+ * 6-row Latin glyph sitting on the baseline of an 8-row CJK band beside it.
+ */
+function blank(n,w,where){
+    const a=[];
+    for(let i=0;i<Math.max(0,n|0);i++) a.push(' '.repeat(Math.max(0,w|0)));
+    return a;
+}
+
+/* ============================================================================
+   5. ANSI SHADOW RENDERER — pixel exact bitmap font
+   ASCII / full-width punctuation come straight from the catalog; anything else
+   (CJK, emoji) is rasterized by charArt() and spliced in on the same baseline.
+   ========================================================================== */
+function renderAnsi(text){
+    const out=[];
+    const unsupported=[];
+    for(const line of text.replace(/\r\n?/g,'\n').split('\n')){
+        const cells=[];
+        for(const g of graphemes(line)){
+            if(g==='\t'){ cells.push({art:blank(6,8)}); continue; }
+            if(isBlank(g)){ cells.push({art:blank(6,isWide(g)?4:2)}); continue; }
+            const art=FONT[g]||FONT[g.toUpperCase()]||FONT[g.toLowerCase()];
+            if(art){ cells.push({art,rows:6}); continue; }
+            if(!supported(g)) unsupported.push(g);
+            const a=charArt(g);                       // CJK/emoji: 8-row band
+            cells.push({art:a,rows:a.length});
+        }
+        const rows=cells.reduce((m,c)=>Math.max(m,c.rows||c.art.length),6);
+        for(const c of cells){
+            const h=c.rows||c.art.length;
+            if(h>=rows) continue;
+            const w=c.art[0]?c.art[0].length:2;
+            // a 6-row Latin glyph sits ON the baseline of the tall band next to it
+            c.art=blank(rows-h,w,'top').concat(c.art);
+        }
+        const buf=new Array(rows).fill('');
+        for(const c of cells) for(let i=0;i<rows;i++) buf[i]+=c.art[i];
+        for(let i=0;i<rows;i++) out.push(trim(buf[i]));
+    }
+    return {text:out.join('\n'),unsupported};
+}
+
+/** Rasterize ONE character into ASCII cells (CJK / emoji inside ANSI style).
+ *  Sampled to 14 cells across, which keeps a CJK stem at ~2 cells so the components
+ *  of an ideograph stay separated instead of merging into a blob. */
+function charArt(g){
+    const rows=inkRows(g);
+    const want=rows>6?14:10;
+    const nat=rasterLine(g,{scale:1,measureOnly:true});
+    const scale=Math.max(0.5,(nat.lineW||want)/want);
+    const rast=rasterLine(g,{scale,tight:true});
+    const c=Math.max(4,Math.min(28,Math.round((rast.lineW||want)/scale)));
+    const grid=sampleGrid(rast,c,rows,scale);
+    const art=[];
+    for(let r=0;r<rows;r++){
+        let ln='';
+        for(let k=0;k<c;k++) ln+=grid.heat[r*c+k]>=0.36?'██':'  ';
+        art.push(ln);
+    }
+    // trim to the real ink box so the character's advance matches its width
+    let l=Infinity,rr=-1;
+    for(const ln of art){
+        const i=ln.indexOf('█'), j=ln.lastIndexOf('█');
+        if(i>=0){ l=Math.min(l,i); rr=Math.max(rr,j+2); }
+    }
+    if(rr<0) return blank(rows,2);
+    l-=l%2; rr+=rr%2;
+    const res=[];
+    for(let r=0;r<rows;r++) res.push(art[r].slice(l,Math.min(art[r].length,rr)));
     return res;
 }
 
-/* ======================== GENERATORS ======================== */
+/* ============================================================================
+   6. RASTER RENDERERS — solid / shade / detail / braille
+   Every style rasterises the line ONCE at a fixed resolution and then samples it
+   down to the requested number of cells, so the width slider changes the level of
+   detail (and the size of the art) without ever changing the glyph shapes.
+   ========================================================================== */
+const BRAILLE_BITS=[[0x01,0x08],[0x02,0x10],[0x04,0x20],[0x40,0x80]];
+const RAMPS={
+    solid:['  ','██'],
+    detail:['  ','··','░░','▒▒','▓▓','██'],
+    shade:['  ','░░','▒▒','▓▓','██']
+};
+/**
+ * Sampling geometry — one cell is square in font units and `cellPx` master px big:
+ *   cell width = cell height = cellPx          cols = inkWidth  / cellPx
+ *   visible cell height in font units = cellPx * aspect
+ *                                              rows = inkHeight / (cellPx * aspect)
+ * `aspect` is how tall a cell is compared with its width. A terminal cell is about
+ * twice as tall as it is wide, so Latin text (half as tall as it is wide) needs 0.5,
+ * a square CJK ideograph needs ~1.0, and a braille character — a 2x4 dot block — is
+ * sampled by 2 and 4 cells, giving 8 rows per braille row, hence 8/2/4 = 1.0 as well
+ * but with four times the vertical resolution.
+ */
+const CELL_ASPECT={latin:0.50,wide:1.0,braille:0.75};
+/** Rasterisation constants.
+ *  SCALE_K   : glyph size per column of width budget, in alphabetic-height units
+ *              (0.06 puts a 64px font at budget 80 and a 176px font at budget 220)
+ *  CELL_REF  : sampling cell in master px — a fixed slice of a glyph, chosen so that one
+ *              Latin glyph spans ~7 cells and a stroke stays at two cells
+ *  CELL_MIN  : hard cell floor, so a tiny budget cannot ask for sub-pixel cells */
+const SCALE_K=0.06, CELL_REF=5, CELL_MIN=2;
+const MIN_SCALE=0.65;
 
-function genAnsi(text){
-    const tls=text.split('\n'),out=[];
-    for(const tl of tls){
-        const row=['','','','','',''];
-        for(const ch of tl){
-            const u=ch.toUpperCase();
-            const art=FONT[u]||charToFallback(ch);
-            const w=art[0].length;
-            for(let i=0;i<6;i++) row[i]+=(art[i]||'').padEnd(w);
-        }
-        for(let i=0;i<6;i++) out.push(row[i].replace(/\s+$/,''));
-    }
-    return out.join('\n');
+function layoutLine(line){
+    const latin=lineMode(line)==='latin';
+    return {latin,aspect:CELL_ASPECT[latin?'latin':'wide']};
 }
 
-function genBlock(text,den){
-    const fs=64,{canvas:c,img}=renderCanvas(text,fs);
-    const step=Math.max(2,Math.round(14-den*1.2));
-    const{width:w,height:h}=c;
-    const rows=Math.ceil(h/step),cols=Math.ceil(w/step),lines=[];
-    for(let r=0;r<rows;r++){
+function renderRaster(text,style,opts){
+    const lines=text.replace(/\r\n?/g,'\n').split('\n');
+    const unsupported=[];
+    const brail=style==='braille';
+    const budget=Math.max(6,Math.min(400,Math.round(opts.cols)));
+    // The budget sets the RENDER SIZE, and the sampling cell stays a fixed slice of a
+    // glyph. So raising it draws the text bigger — more cells per letter, more columns
+    // per line, taller art — while the cell never passes below a resolvable size:
+    //   scale = budget-driven glyph size       cell = fixed px slice of that glyph
+    // This is the only arrangement where the slider changes the output width; scaling
+    // the cell along with the glyphs would leave the cell count unchanged.
+    const scale=Math.max(MIN_SCALE,budget*SCALE_K);
+    const cellPx=Math.max(CELL_MIN,CELL_REF);
+    const out=[];
+    const items=[];
+    for(const line of lines){
+        if(!line.trim()){ items.push({blank:true}); continue; }
+        const L=layoutLine(line);
+        const rast=rasterLine(line,{scale,tight:opts.squish});
+        if(rast.unsupported.length) unsupported.push(...rast.unsupported);
+        const cols=Math.max(1,Math.round((rast.inkW||1)/cellPx));
+        // square cells: rows = ink height / (cell * aspect)
+        const rows=Math.max(3,Math.min(400,Math.round((rast.inkH||1)/(cellPx*L.aspect))));
+        items.push({rast,rows,cols});
+    }
+    const totalCols=Math.max(1,...items.filter(i=>!i.blank).map(i=>i.cols));
+    for(const it of items){
+        if(it.blank){ out.push(''); continue; }
+        const grid=padGrid(sampleGrid(it.rast,it.cols,it.rows,cellPx),totalCols);
+        if(brail) out.push(...brailleLines(grid,opts));
+        else out.push(...applyRamp(grid,RAMPS[style]||RAMPS.solid,opts));
+    }
+    return {text:out.join('\n').replace(/\n{3,}/g,'\n\n'),unsupported};
+}
+
+/** luminance grid -> characters */
+function applyRamp(grid,ramp,opts){
+    const n=ramp.length-1;
+    const lines=[];
+    for(let r=0;r<grid.h;r++){
         let ln='';
-        for(let cl=0;cl<cols;cl++){
-            ln+=avgB(img,cl*step,r*step,step,step)>100?'██':'  ';
+        for(let c=0;c<grid.w;c++){
+            let v=grid.heat[r*grid.w+c];
+            if(opts.gamma!==1) v=Math.pow(v,opts.gamma);
+            if(opts.invert) v=1-v;
+            // a short knee removes the grey halo anti-aliasing adds around stems
+            else if(v<0.17) v=0;
+            let idx=Math.round(v*n);
+            if(idx<0) idx=0; else if(idx>n) idx=n;
+            ln+=ramp[idx];
         }
-        lines.push(ln.replace(/\s+$/,''));
+        lines.push(trim(ln));
     }
-    return lines.join('\n');
+    return lines;
 }
-
-function genShade(text,den){
-    const fs=64,{canvas:c,img}=renderCanvas(text,fs);
-    const step=Math.max(2,Math.round(14-den*1.2));
-    const{width:w,height:h}=c;
-    const rows=Math.ceil(h/step),cols=Math.ceil(w/step);
-    const sh=['  ','░░','▒▒','▓▓','██'],lines=[];
-    for(let r=0;r<rows;r++){
-        let ln='';
-        for(let cl=0;cl<cols;cl++){
-            const b=avgB(img,cl*step,r*step,step,step);
-            ln+=sh[Math.min(4,Math.floor(b/51))];
-        }
-        lines.push(ln.replace(/\s+$/,''));
-    }
-    return lines.join('\n');
-}
-
-function genBraille(text,den){
-    const fs=64,{canvas:c,img}=renderCanvas(text,fs);
-    const ss=Math.max(1,Math.round(8-den*0.6));
-    const{width:w,height:h}=c;
-    const dw=Math.ceil(w/ss),dh=Math.ceil(h/ss);
-    const cw=Math.ceil(dw/2),ch=Math.ceil(dh/4);
-    const bit=[[0,3],[1,4],[2,5],[6,7]],lines=[];
+function brailleLines(grid,opts){
+    const cw=Math.ceil(grid.w/2), ch=Math.ceil(grid.h/4);
+    const lines=[];
     for(let cy=0;cy<ch;cy++){
         let ln='';
         for(let cx=0;cx<cw;cx++){
             let pat=0;
             for(let dy=0;dy<4;dy++)for(let dx=0;dx<2;dx++){
-                const dx2=cx*2+dx,dy2=cy*4+dy;
-                if(dx2<dw&&dy2<dh&&avgB(img,dx2*ss,dy2*ss,ss,ss)>100)
-                    pat|=1<<bit[dy][dx];
+                const x=cx*2+dx, y=cy*4+dy;
+                if(x>=grid.w||y>=grid.h) continue;
+                let v=grid.heat[y*grid.w+x];
+                if(opts.gamma!==1) v=Math.pow(v,opts.gamma);
+                if(opts.invert) v=1-v;
+                if(v>=0.34) pat|=BRAILLE_BITS[dy][dx];
             }
             ln+=String.fromCodePoint(0x2800+pat);
         }
-        lines.push(ln.replace(/\s+$/,''));
+        lines.push(trim(ln));
     }
-    return lines.join('\n');
+    return lines;
 }
 
-/* ======================== UI ======================== */
+/* ============================================================================
+   7. UI
+   ========================================================================== */
 const $in=document.getElementById('inputText');
-const $den=document.getElementById('density');
 const $out=document.getElementById('output');
 const $cp=document.getElementById('copyBtn');
+const $dl=document.getElementById('downloadBtn');
+const $meta=document.getElementById('meta');
+const $warn=document.getElementById('warn');
+const $cols=document.getElementById('cols');
+const $colsOut=document.getElementById('colsOut');
+const $gamma=document.getElementById('gamma');
+const $gammaOut=document.getElementById('gammaOut');
+const $invert=document.getElementById('invert');
+const $tight=document.getElementById('tight');
 const $btns=document.querySelectorAll('.style-btn');
 let sty='ansi',timer=null;
+
+function readOpts(){
+    return {
+        cols:Math.max(8,+$cols.value),
+        gamma:Math.max(0.3,+$gamma.value/100),
+        invert:$invert.checked,
+        squish:$tight.checked
+    };
+}
 
 function update(){
     const t=$in.value;
     if(!t.trim()){
         $out.innerHTML='<span class="ph">输入文字后自动生成...</span>';
+        $meta.textContent='OUTPUT';
+        $warn.classList.remove('show');
         return;
     }
-    const d=+$den.value;let r;
+    const opts=readOpts();
+    let res;
     try{
-        switch(sty){
-            case'ansi':r=genAnsi(t);break;
-            case'block':r=genBlock(t,d);break;
-            case'shade':r=genShade(t,d);break;
-            case'braille':r=genBraille(t,d);break;
-        }
-    }catch(e){r='Error: '+e.message;}
-    $out.textContent=r;
+        res=(sty==='ansi')?renderAnsi(t):renderRaster(t,sty,opts);
+    }catch(e){
+        res={text:'Error: '+(e&&e.message?e.message:e),unsupported:[]};
+    }
+    const text=res.text.replace(/\n{3,}/g,'\n\n');
+    $out.textContent=text;
+    const rows=text.split('\n');
+    let cells=0;
+    for(const l of rows) cells=Math.max(cells,Array.from(l).length);
+    // one art cell is two characters wide, so report both numbers
+    $meta.innerHTML=(sty==='ansi')
+        ? 'OUTPUT <b>'+cells+'</b> × <b>'+rows.length+'</b>'
+        : 'OUTPUT <b>'+cells+'</b> 字符宽 · <b>'+Math.round(cells/2)+'</b> 网格 × <b>'+rows.length+'</b> 行';
+    const list=Array.from(new Set(res.unsupported||[])).slice(0,12);
+    if(list.length){
+        $warn.textContent='⚠ 系统字体缺少这些字符的字形：'+list.join(' ')+'（可能显示为方框或空白），请安装对应字体或改用其他字符。';
+        $warn.classList.add('show');
+    }else{
+        $warn.classList.remove('show');
+    }
 }
-
-function debounced(){clearTimeout(timer);timer=setTimeout(update,120);}
+function debounced(){ clearTimeout(timer); timer=setTimeout(update,90); }
 
 $in.addEventListener('input',debounced);
-$den.addEventListener('input',debounced);
+$cols.addEventListener('input',()=>{ $colsOut.textContent=$cols.value; debounced(); });
+$gamma.addEventListener('input',()=>{ $gammaOut.textContent=(+$gamma.value/100).toFixed(2); debounced(); });
+[$invert,$tight].forEach(el=>el.addEventListener('change',update));
 $btns.forEach(b=>b.addEventListener('click',()=>{
     $btns.forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');sty=b.dataset.style;update();
+    b.classList.add('active'); sty=b.dataset.style; update();
 }));
 $cp.addEventListener('click',()=>{
     const t=$out.textContent;
-    if(!t||t.includes('输入文字'))return;
-    navigator.clipboard.writeText(t).then(()=>{
-        $cp.textContent='已复制 ✓';$cp.classList.add('done');
-        setTimeout(()=>{$cp.textContent='复制';$cp.classList.remove('done');},1500);
-    }).catch(()=>{
-        const r=document.createRange();r.selectNodeContents($out);
-        const s=window.getSelection();s.removeAllRanges();s.addRange(r);
-    });
+    if(!t||t.includes('输入文字')) return;
+    const done=()=>{ $cp.textContent='已复制 ✓'; $cp.classList.add('done');
+        setTimeout(()=>{ $cp.textContent='复制'; $cp.classList.remove('done'); },1500); };
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(done).catch(selectOut);
+    }else selectOut();
+    function selectOut(){
+        const r=document.createRange(); r.selectNodeContents($out);
+        const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    }
+});
+$dl.addEventListener('click',()=>{
+    const t=$out.textContent;
+    if(!t||t.includes('输入文字')) return;
+    const blob=new Blob([t],{type:'text/plain;charset=utf-8'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='text-art.txt';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 });
 
+$colsOut.textContent=$cols.value;
+$gammaOut.textContent=(+$gamma.value/100).toFixed(2);
 update();
 })();
 </script>
