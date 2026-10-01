@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckinReward — 签到连续奖励配置器</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='2' width='12' height='12' rx='2' fill='%23b18cff'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #08080b;
+            --surface: #0f0f13;
+            --surface-2: #16161c;
+            --border: #222230;
+            --accent: #b18cff;
+            --accent-dim: rgba(177, 140, 255, 0.12);
+            --accent-bright: #c7a8ff;
+            --ok: #7ee0a3;
+            --text: #e4e0d6;
+            --text-muted: #6b665e;
+            --text-dim: #3a3832;
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 200px 200px;
+        }
+
+        /* ── Header ── */
+        header {
+            padding: 24px 36px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            background: var(--surface);
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 26px;
+            font-weight: 400;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        header .sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        header .head-summary {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        header .head-summary b {
+            color: var(--accent-bright);
+            font-weight: 400;
+        }
+
+        /* ── App Layout ── */
+        .app {
+            display: flex;
+            min-height: calc(100vh - 74px);
+        }
+
+        .sidebar {
+            width: 340px;
+            min-width: 340px;
+            border-right: 1px solid var(--border);
+            padding: 24px 20px 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 26px;
+            background: var(--surface);
+        }
+
+        .content {
+            flex: 1;
+            padding: 28px 32px 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            min-width: 0;
+        }
+
+        /* ── Panels ── */
+        .panel-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--accent);
+            border-radius: 1px;
+            transform: rotate(45deg);
+            flex-shrink: 0;
+        }
+
+        /* ── Inputs ── */
+        input[type="number"], input[type="text"], select {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 13px;
+            border-radius: var(--radius-sm);
+            padding: 7px 10px;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            min-width: 0;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .field-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .field-row .num { width: 74px; text-align: right; font-variant-numeric: tabular-nums; }
+        .field-row .unit-input { width: 92px; }
+        .field-row .sel { width: 74px; }
+
+        .flabel {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+        }
+
+        .hint {
+            margin-top: 9px;
+            font-size: 10.5px;
+            line-height: 1.7;
+            color: var(--text-muted);
+        }
+
+        .hint b { color: var(--text); font-weight: 500; }
+        .hint .warn { color: #ff9d76; }
+
+        /* ── Sliders ── */
+        .slider-group { display: flex; flex-direction: column; gap: 12px; }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            width: 16px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: #333;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--text);
+            border: 2px solid var(--bg);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 1px var(--accent), 0 2px 12px rgba(0,0,0,0.6);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--text);
+            border: 2px solid var(--bg);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-track {
+            height: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .slider-value {
+            font-size: 11px;
+            color: var(--text);
+            width: 36px;
+            text-align: right;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .param-group { display: none; }
+        .param-group.visible { display: block; }
+
+        /* ── Scheme List ── */
+        .scheme-list { display: flex; flex-direction: column; gap: 5px; }
+
+        .scheme-item {
+            padding: 9px 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            user-select: none;
+        }
+
+        .scheme-item:hover { border-color: var(--accent); }
+        .scheme-item.active {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .scheme-item .row1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .scheme-item .sname { font-size: 12.5px; color: var(--text); }
+        .scheme-item.active .sname { color: var(--accent-bright); }
+        .scheme-item .sformula { font-size: 10px; color: var(--text-muted); }
+
+        .scheme-item .sdesc {
+            margin-top: 3px;
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        .param-desc {
+            font-size: 10.5px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .param-desc .f {
+            color: var(--accent-bright);
+            background: var(--accent-dim);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        /* ── Presets ── */
+        .preset-list { display: flex; flex-direction: column; gap: 5px; }
+
+        .preset-item {
+            padding: 8px 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, transform 0.1s;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .preset-item:hover { border-color: var(--accent); background: var(--accent-dim); }
+        .preset-item:active { transform: scale(0.97); }
+
+        .preset-item .pname { font-size: 11.5px; color: var(--text); }
+        .preset-item .pdesc { font-size: 9.5px; color: var(--text-muted); }
+
+        /* ── Output ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .card-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--accent);
+            border-radius: 1px;
+            transform: rotate(45deg);
+        }
+
+        .card-head .spacer { flex: 1; }
+
+        .output-box {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            font-size: 13px;
+            line-height: 2;
+            color: var(--accent-bright);
+            word-break: break-all;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .output-box.empty { color: var(--text-dim); }
+
+        /* ── Buttons ── */
+        .btn {
+            font-family: inherit;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--accent);
+            background: var(--accent);
+            color: #131016;
+            cursor: pointer;
+            transition: filter 0.15s, transform 0.1s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover { filter: brightness(1.12); }
+        .btn:active { transform: scale(0.96); }
+        .btn.copied { background: var(--ok); border-color: var(--ok); }
+
+        .btn-ghost {
+            font-family: inherit;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, transform 0.1s;
+            text-transform: uppercase;
+        }
+
+        .btn-ghost:hover { border-color: var(--accent); color: var(--accent-bright); }
+        .btn-ghost:active { transform: scale(0.96); }
+
+        /* ── Checkbox ── */
+        .chk {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 10.5px;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+            letter-spacing: 0.06em;
+        }
+
+        .chk input { accent-color: var(--accent); cursor: pointer; }
+
+        /* ── Stats ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .stat-tile {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+        }
+
+        .stat-tile .slabel {
+            font-size: 9.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin-bottom: 7px;
+        }
+
+        .stat-tile .svalue {
+            font-size: 17px;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-tile .svalue b { color: var(--accent-bright); font-weight: 500; }
+        .stat-tile .svalue .sunit { font-size: 11px; color: var(--text-muted); }
+
+        /* ── Chart ── */
+        .chart-card { position: relative; }
+
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-left: auto;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .legend-swatch { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+        .legend-line { display: inline-block; width: 14px; height: 0; border-top: 1.5px solid var(--accent); opacity: 0.45; margin-right: 5px; vertical-align: middle; }
+
+        #chartCanvas { display: block; cursor: crosshair; }
+
+        #chartTip {
+            position: absolute;
+            pointer-events: none;
+            background: #1a1a22;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 10.5px;
+            color: var(--text);
+            display: none;
+            z-index: 5;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #chartTip b { color: var(--accent-bright); font-weight: 500; }
+
+        /* ── Chips ── */
+        .chip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .chip-grid::-webkit-scrollbar { width: 4px; }
+        .chip-grid::-webkit-scrollbar-track { background: transparent; }
+        .chip-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .chip {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 11px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .chip .d { color: var(--text-muted); }
+        .chip .a { color: var(--accent-bright); }
+
+        /* ── Note ── */
+        .note {
+            font-size: 10.5px;
+            line-height: 1.9;
+            color: var(--text-muted);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+        }
+
+        .note b { color: var(--text); font-weight: 500; }
+
+        .error-note {
+            display: none;
+            border: 1px solid #5a3226;
+            background: rgba(255, 122, 69, 0.07);
+            color: #ff9d76;
+            font-size: 12px;
+            line-height: 1.8;
+            border-radius: var(--radius);
+            padding: 14px 18px;
+        }
+
+        .error-note.visible { display: block; }
+
+        /* ── Toast ── */
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%) translateY(20px);
+            background: #1a1a22;
+            border: 1px solid var(--accent);
+            color: var(--accent-bright);
+            font-size: 12px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+            z-index: 10000;
+            letter-spacing: 0.06em;
+        }
+
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ── Responsive ── */
+        @media (max-width: 980px) {
+            .app { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .content { padding: 22px 18px 40px; }
+            header { padding: 20px 22px; }
+            header .head-summary { margin-left: 0; width: 100%; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CheckinReward</h1>
+        <span class="sub">SIGN-IN REWARD CONFIG · 签到连续奖励配置器</span>
+        <span class="head-summary" id="headSummary"></span>
+    </header>
+
+    <div class="app">
+
+        <!-- ══ Sidebar ══ -->
+        <aside class="sidebar">
+
+            <!-- Presets -->
+            <div class="panel">
+                <div class="panel-title">预设 · Presets</div>
+                <div class="preset-list" id="presetList"></div>
+            </div>
+
+            <!-- Total -->
+            <div class="panel">
+                <div class="panel-title">总奖励 · Total</div>
+                <div class="field-row">
+                    <span class="flabel">总</span>
+                    <input type="number" id="totalNum" class="num" min="1" max="100000" value="10">
+                    <input type="text" id="unitText" class="unit-input" value="积分" maxlength="8" placeholder="积分">
+                </div>
+                <div class="hint">奖励总量（整数），将按方案精确分摊到各奖励日，合计不会溢出或缺失。</div>
+            </div>
+
+            <!-- Period -->
+            <div class="panel">
+                <div class="panel-title">周期 · Period</div>
+                <div class="field-row">
+                    <span class="flabel">每</span>
+                    <input type="number" id="periodNum" class="num" min="1" max="100" value="30">
+                    <select id="periodUnit" class="sel">
+                        <option value="天">天</option>
+                        <option value="周">周</option>
+                        <option value="月">月</option>
+                        <option value="年" selected>年</option>
+                    </select>
+                </div>
+                <div class="hint" id="periodHint">≈ <b>30 天</b> · 首奖第 <b>7</b> 天 · 共 <b>4</b> 个节点</div>
+                <div class="hint">单位换算：1 周 = 7 天 · 1 月 = 30 天 · 1 年 = 365 天</div>
+            </div>
+
+            <!-- Interval -->
+            <div class="panel">
+                <div class="panel-title">发放节奏 · Interval</div>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label">Δ</span>
+                        <input type="range" id="intervalSlider" min="1" max="90" step="1" value="7">
+                        <span class="slider-value" id="intervalVal">7 天</span>
+                    </div>
+                </div>
+                <div class="field-row" style="margin-top:10px;">
+                    <span class="flabel">每</span>
+                    <input type="number" id="intervalNum" class="num" min="1" max="365" value="7">
+                    <span class="flabel">天发一次奖励</span>
+                </div>
+            </div>
+
+            <!-- Scheme -->
+            <div class="panel">
+                <div class="panel-title">分配方案 · Scheme</div>
+                <div class="scheme-list" id="schemeList"></div>
+            </div>
+
+            <!-- Scheme Params -->
+            <div class="panel">
+                <div class="panel-title">方案参数 · Params</div>
+
+                <div class="param-group" id="paramNone">
+                    <div class="param-desc">所有节点权重相同，金额完全一致。</div>
+                </div>
+
+                <div class="param-group" id="paramPower">
+                    <div class="param-desc">权重 <span class="f" id="powerFormula">wᵢ = i^1.0</span> · 幂次越高，越向后期倾斜。</div>
+                    <div class="slider-group">
+                        <div class="slider-row">
+                            <span class="slider-label">p</span>
+                            <input type="range" id="pSlider" min="0.3" max="3" step="0.1" value="1">
+                            <span class="slider-value" id="pVal">1.0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="param-group" id="paramExp">
+                    <div class="param-desc">权重 <span class="f">wᵢ = q^(i−1)</span> · 底数越大，后期越爆发。</div>
+                    <div class="slider-group">
+                        <div class="slider-row">
+                            <span class="slider-label">q</span>
+                            <input type="range" id="qSlider" min="1.05" max="3" step="0.05" value="1.5">
+                            <span class="slider-value" id="qVal">1.50</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="param-group" id="paramGamma">
+                    <div class="param-desc">权重 <span class="f">w = t^(k−1) · e^(−t/θ)</span> · t 为累计天数，峰值约在第 (k−1)·θ 天。</div>
+                    <div class="slider-group">
+                        <div class="slider-row">
+                            <span class="slider-label">k</span>
+                            <input type="range" id="kSlider" min="0.5" max="8" step="0.1" value="2">
+                            <span class="slider-value" id="kVal">2.0</span>
+                        </div>
+                        <div class="slider-row">
+                            <span class="slider-label">θ</span>
+                            <input type="range" id="tSlider" min="5" max="180" step="1" value="45">
+                            <span class="slider-value" id="tVal">45</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- ══ Content ══ -->
+        <main class="content">
+
+            <div class="error-note" id="errorNote"></div>
+
+            <!-- Output -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">输出代码 · Output</span>
+                    <label class="chk">
+                        <input type="checkbox" id="withComment">
+                        附带注释行
+                    </label>
+                    <span class="spacer"></span>
+                    <button class="btn-ghost" id="btnDownload">下载 .txt</button>
+                    <button class="btn" id="btnCopy">复制</button>
+                </div>
+                <div class="output-box" id="outCode"></div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid" id="statsGrid"></div>
+
+            <!-- Chart -->
+            <div class="card chart-card">
+                <div class="card-head">
+                    <span class="card-title">奖励分布曲线 · Curve</span>
+                    <span class="chart-legend">
+                        <span><span class="legend-swatch" style="background:var(--accent);"></span>单次奖励</span>
+                        <span><span class="legend-line"></span>方案权重</span>
+                    </span>
+                </div>
+                <canvas id="chartCanvas" height="230"></canvas>
+                <div id="chartTip"></div>
+            </div>
+
+            <!-- Chips -->
+            <div class="card">
+                <div class="card-head">
+                    <span class="card-title">明细 · Detail</span>
+                    <span style="margin-left:auto; font-size:10px; color:var(--text-muted);" id="chipNote"></span>
+                </div>
+                <div class="chip-grid" id="chipGrid"></div>
+            </div>
+
+            <!-- Note -->
+            <div class="note">
+                <b>格式说明：</b>输出为 <b>day:amount</b> 键值对，以英文逗号分隔（如 <b>7:1,14:2,21:3</b>）。day 表示连续签到第 N 天发放，amount 为该次发放的数量，单位即左侧配置的单位。<br>
+                <b>分配算法：</b>先按所选方案计算各节点权重，再以「最大余数法」取整，保证所有节点之和与总奖励完全一致；奖励为 0 的节点自动省略。<br>
+                <b>提示：</b>若总奖励小于节点数，部分早期/低权重节点会归零；调高总量或调大间隔即可让每个节点都有奖励。
+            </div>
+
+        </main>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+    'use strict';
+
+    const $ = id => document.getElementById(id);
+    const UNIT_DAYS = { '天': 1, '周': 7, '月': 30, '年': 365 };
+
+    const SCHEMES = {
+        uniform: { name: '均匀分配', formula: 'wᵢ = 1', desc: '每个奖励日金额完全一致' },
+        linear:  { name: '正比递增', formula: 'wᵢ = i^p', desc: '奖励随天数线性放大，越久越值' },
+        inverse: { name: '反比递减', formula: 'wᵢ = (n+1−i)^p', desc: '前期奖励高，快速拉起启动' },
+        exp:     { name: '指数增长', formula: 'wᵢ = q^(i−1)', desc: '后期爆发式增长，留存拉满' },
+        gamma:   { name: '伽马曲线', formula: 'w = t^(k−1)·e^(−t/θ)', desc: '先升后降的驼峰，峰值在周期中段' }
+    };
+
+    const PRESETS = [
+        { name: '月卡 · 正比', desc: '10 积分 / 30 天 / 每 7 天',
+          total: 10, unit: '积分', pn: 30, pu: '天', it: 7, scheme: 'linear', p: 1 },
+        { name: '钻石 · 伽马', desc: '45 钻石 / 200 天 / 每 10 天',
+          total: 45, unit: '钻石', pn: 200, pu: '天', it: 10, scheme: 'gamma', k: 2, theta: 45 },
+        { name: '年卡 · 指数', desc: '1000 积分 / 1 年 / 每 30 天',
+          total: 1000, unit: '积分', pn: 1, pu: '年', it: 30, scheme: 'exp', q: 1.6 },
+        { name: '月卡 · 反比', desc: '100 金币 / 30 天 / 每 3 天',
+          total: 100, unit: '金币', pn: 30, pu: '天', it: 3, scheme: 'inverse', p: 1 }
+    ];
+
+    const S = {
+        total: 10, unit: '积分',
+        periodNum: 30, periodUnit: '天',
+        interval: 7,
+        scheme: 'linear',
+        p: 1, q: 1.5, k: 2, theta: 45,
+        withComment: false
+    };
+
+    const MAX_CHIPS = 400;
+    let result = null;          // { cycleDays, n, days, weights, allocs, entries }
+    let chartLayout = null;     // hit-test data for tooltip
+
+    /* ─────────── Computation ─────────── */
+
+    function computeWeights(n) {
+        const w = new Array(n);
+        switch (S.scheme) {
+            case 'uniform':
+                w.fill(1);
+                break;
+            case 'linear':
+                for (let i = 0; i < n; i++) w[i] = Math.pow(i + 1, S.p);
+                break;
+            case 'inverse':
+                for (let i = 0; i < n; i++) w[i] = Math.pow(n - i, S.p);
+                break;
+            case 'exp': {
+                // log-space to avoid float overflow on huge n
+                const lnq = Math.log(S.q);
+                const logw = new Array(n);
+                let maxL = 0;
+                for (let i = 0; i < n; i++) {
+                    logw[i] = Math.min(700, lnq * i);
+                    maxL = Math.max(maxL, logw[i]);
+                }
+                for (let i = 0; i < n; i++) w[i] = Math.exp(logw[i] - maxL);
+                break;
+            }
+            case 'gamma':
+                for (let i = 0; i < n; i++) {
+                    const t = (i + 1) * S.interval;
+                    w[i] = Math.pow(t, S.k - 1) * Math.exp(-t / S.theta);
+                }
+                break;
+        }
+        return w;
+    }
+
+    function allocate(total, weights) {
+        const n = weights.length;
+        const sum = weights.reduce((a, b) => a + b, 0);
+        if (!isFinite(sum) || sum <= 0) return new Array(n).fill(0);
+        const raw = weights.map(w => total * w / sum);
+        const out = raw.map(Math.floor);
+        let rem = Math.round(total - out.reduce((a, b) => a + b, 0));
+        rem = Math.max(0, Math.min(rem, n - 1));
+        const order = raw
+            .map((r, i) => ({ i, frac: r - Math.floor(r) }))
+            .sort((a, b) => b.frac - a.frac || a.i - b.i);
+        for (let j = 0; j < rem; j++) out[order[j].i]++;
+        // safety: force exact total
+        const diff = total - out.reduce((a, b) => a + b, 0);
+        if (diff !== 0 && n > 0) out[0] += diff;
+        return out;
+    }
+
+    function compute() {
+        const cycleDays = S.periodNum * UNIT_DAYS[S.periodUnit];
+        const n = Math.floor(cycleDays / S.interval);
+        const days = [];
+        for (let i = 0; i < n; i++) days.push((i + 1) * S.interval);
+        const weights = computeWeights(n);
+        const allocs = allocate(S.total, weights);
+        const entries = [];
+        for (let i = 0; i < n; i++) {
+            if (allocs[i] > 0) entries.push({ day: days[i], amt: allocs[i] });
+        }
+        result = { cycleDays, n, days, weights, allocs, entries };
+        return result;
+    }
+
+    /* ─────────── Rendering ─────────── */
+
+    function render() {
+        compute();
+
+        const r = result;
+        const scheme = SCHEMES[S.scheme];
+
+        // header summary
+        $('headSummary').innerHTML =
+            `总 <b>${S.total} ${esc(S.unit)}</b> / 每 <b>${S.periodNum} ${S.periodUnit}</b>(${r.cycleDays}天) · 每 <b>${S.interval}</b> 天 · <b>${scheme.name}</b>`;
+
+        // period hint
+        const warn = r.n === 0
+            ? ' <span class="warn">间隔超过周期，无奖励节点</span>'
+            : '';
+        $('periodHint').innerHTML =
+            `≈ <b>${r.cycleDays}</b> 天 · 首奖第 <b>${S.interval}</b> 天 · 共 <b>${r.n}</b> 个节点${warn}`;
+
+        // error note
+        if (r.n === 0) {
+            $('errorNote').classList.add('visible');
+            $('errorNote').textContent =
+                `⚠ 发放间隔 ${S.interval} 天 大于周期 ${r.cycleDays} 天，无法产生任何奖励节点。请减小间隔或增大周期。`;
+        } else {
+            $('errorNote').classList.remove('visible');
+        }
+
+        // output code
+        const code = r.entries.map(e => `${e.day}:${e.amt}`).join(',');
+        const full = S.withComment
+            ? `# 总 ${S.total} ${S.unit} / 每 ${S.periodNum} ${S.periodUnit}(${r.cycleDays}天) / 每 ${S.interval} 天 / ${scheme.name}\n${code}`
+            : code;
+        const outBox = $('outCode');
+        outBox.textContent = r.n === 0 ? '— 无奖励节点 —' : full;
+        outBox.classList.toggle('empty', r.n === 0);
+        outBox.dataset.full = full;
+
+        // stats
+        const maxEntry = r.entries.reduce((m, e) => (e.amt > m.amt ? e : m), { day: 0, amt: 0 });
+        const tail = r.cycleDays - r.n * S.interval;
+        const yearly = (S.total / r.cycleDays * 365);
+        const omitted = r.n - r.entries.length;
+        const stats = [
+            { label: '奖励节点', value: `${r.n}<span class="sunit"> 个</span>` },
+            { label: '有效节点', value: `<b>${r.entries.length}</b><span class="sunit"> 个${omitted > 0 ? ` · 略 ${omitted}` : ''}</span>` },
+            { label: '合计发放', value: `<b>${r.entries.reduce((a, e) => a + e.amt, 0)}</b><span class="sunit"> ${esc(S.unit)}</span>` },
+            { label: '单次最高', value: `<b>${maxEntry.amt}</b><span class="sunit"> · 第 ${maxEntry.day} 天</span>` },
+            { label: '折合年化', value: `<b>${fmtNum(yearly)}</b><span class="sunit"> ${esc(S.unit)} / 年</span>` },
+            { label: '尾部空窗', value: tail > 0 ? `<b>${tail}</b><span class="sunit"> 天无奖励</span>` : `<span class="sunit">无</span>` }
+        ];
+        $('statsGrid').innerHTML = stats.map(s =>
+            `<div class="stat-tile"><div class="slabel">${s.label}</div><div class="svalue">${s.value}</div></div>`
+        ).join('');
+
+        // chips
+        const chips = r.entries.slice(0, MAX_CHIPS);
+        $('chipGrid').innerHTML = chips.map(e =>
+            `<div class="chip"><span class="d">D${e.day}</span><span class="a">×${e.amt}</span></div>`
+        ).join('');
+        $('chipNote').textContent = r.n === 0 ? ''
+            : (omitted > 0 ? `省略 ${omitted} 个 0 奖励节点` : (r.entries.length > MAX_CHIPS ? `仅显示前 ${MAX_CHIPS} 项` : `共 ${r.entries.length} 项`));
+
+        drawChart();
+    }
+
+    /* ─────────── Chart ─────────── */
+
+    function drawChart() {
+        const cv = $('chartCanvas');
+        const wrap = cv.parentElement;
+        const w = wrap.clientWidth - 40; // card padding 20*2
+        const h = 230;
+        const dpr = window.devicePixelRatio || 1;
+        cv.width = Math.max(1, w * dpr);
+        cv.height = h * dpr;
+        cv.style.width = w + 'px';
+        cv.style.height = h + 'px';
+        const ctx = cv.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, w, h);
+
+        const r = result;
+        if (!r || r.n === 0 || w < 50) {
+            ctx.fillStyle = 'rgba(107,102,94,0.5)';
+            ctx.font = '12px "DM Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('调整参数后生成曲线', w / 2, h / 2);
+            chartLayout = null;
+            return;
+        }
+
+        const padL = 42, padR = 12, padT = 14, padB = 26;
+        const plotW = w - padL - padR, plotH = h - padT - padB;
+        const yMax = Math.max(1, ...r.allocs);
+        const wMax = Math.max(1e-12, ...r.weights);
+
+        // gridlines
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.fillStyle = 'rgba(107,102,94,0.65)';
+        ctx.font = '9px "DM Mono", monospace';
+        ctx.textAlign = 'right';
+        const gls = [0, yMax / 2, yMax];
+        for (const g of gls) {
+            const y = padT + plotH - (g / yMax) * plotH;
+            ctx.beginPath();
+            ctx.moveTo(padL, y);
+            ctx.lineTo(w - padR, y);
+            ctx.stroke();
+            ctx.fillText(g === Math.floor(g) ? String(g) : g.toFixed(1), padL - 6, y + 3);
+        }
+
+        // weight curve
+        ctx.strokeStyle = 'rgba(177,140,255,0.45)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        for (let i = 0; i < r.n; i++) {
+            const x = padL + (i + 0.5) * (plotW / r.n);
+            const y = padT + plotH - (r.weights[i] / wMax) * plotH;
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // bars
+        const slot = plotW / r.n;
+        const barW = Math.max(1, slot * 0.62);
+        for (let i = 0; i < r.n; i++) {
+            const x = padL + slot * i + (slot - barW) / 2;
+            const a = r.allocs[i];
+            if (a > 0) {
+                const bh = Math.max(2, (a / yMax) * plotH);
+                const y = padT + plotH - bh;
+                ctx.fillStyle = 'rgba(177,140,255,0.85)';
+                roundedBar(ctx, x, y, barW, bh, 2);
+            } else {
+                const y = padT + plotH - 1.5;
+                ctx.fillStyle = 'rgba(107,102,94,0.35)';
+                ctx.fillRect(x, y, barW, 1.5);
+            }
+        }
+
+        // x labels
+        const step = Math.max(1, Math.ceil(r.n / 8));
+        ctx.fillStyle = 'rgba(107,102,94,0.75)';
+        ctx.textAlign = 'center';
+        for (let i = 0; i < r.n; i += step) {
+            const x = padL + (i + 0.5) * slot;
+            if (i === 0 || x > padL + 14) {
+                ctx.fillText(String(r.days[i]), x, h - 8);
+            }
+        }
+
+        chartLayout = { padL, padT, plotW, plotH, n: r.n, w };
+    }
+
+    function roundedBar(ctx, x, y, w, h, r) {
+        if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, r);
+            ctx.fill();
+        } else {
+            ctx.fillRect(x, y, w, h);
+        }
+    }
+
+    function onChartMove(ev) {
+        const L = chartLayout;
+        const tip = $('chartTip');
+        if (!L) { tip.style.display = 'none'; return; }
+        const rect = $('chartCanvas').getBoundingClientRect();
+        const x = ev.clientX - rect.left;
+        const y = ev.clientY - rect.top;
+        const i = Math.floor((x - L.padL) / (L.plotW / L.n));
+        if (i < 0 || i >= L.n) { tip.style.display = 'none'; return; }
+        const r = result;
+        tip.innerHTML = `第 <b>${r.days[i]}</b> 天 · <b>${r.allocs[i]}</b> ${esc(S.unit)}`;
+        tip.style.display = 'block';
+        let tx = Math.min(ev.clientX - rect.left + 14, rect.width - 150);
+        let ty = Math.max(4, ev.clientY - rect.top - 34);
+        tip.style.left = tx + 'px';
+        tip.style.top = ty + 'px';
+    }
+
+    function onChartLeave() { $('chartTip').style.display = 'none'; }
+
+    /* ─────────── Copy / Download / Toast ─────────── */
+
+    let toastTimer = null;
+    function toast(msg) {
+        const t = $('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+    }
+
+    async function copyCode() {
+        const text = $('outCode').dataset.full || '';
+        if (!text || result.n === 0) return;
+        let ok = false;
+        try {
+            await navigator.clipboard.writeText(text);
+            ok = true;
+        } catch (e) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
+            document.body.removeChild(ta);
+        }
+        if (ok) {
+            const btn = $('btnCopy');
+            btn.classList.add('copied');
+            btn.textContent = '已复制';
+            toast('已复制到剪贴板');
+            setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '复制'; }, 1400);
+        } else {
+            toast('复制失败，请手动选择');
+        }
+    }
+
+    function downloadTxt() {
+        const text = $('outCode').dataset.full || '';
+        if (!text || result.n === 0) return;
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'checkin_reward.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        toast('已下载 checkin_reward.txt');
+    }
+
+    /* ─────────── Scheme UI ─────────── */
+
+    function buildSchemeList() {
+        $('schemeList').innerHTML = Object.entries(SCHEMES).map(([key, s]) =>
+            `<div class="scheme-item" data-scheme="${key}">
+                <div class="row1"><span class="sname">${s.name}</span><span class="sformula">${s.formula}</span></div>
+                <div class="sdesc">${s.desc}</div>
+            </div>`
+        ).join('');
+        $('schemeList').addEventListener('click', ev => {
+            const item = ev.target.closest('.scheme-item');
+            if (!item) return;
+            setScheme(item.dataset.scheme);
+        });
+    }
+
+    function setScheme(key) {
+        S.scheme = key;
+        document.querySelectorAll('.scheme-item').forEach(el =>
+            el.classList.toggle('active', el.dataset.scheme === key));
+        const show = {
+            uniform: 'paramNone',
+            linear: 'paramPower',
+            inverse: 'paramPower',
+            exp: 'paramExp',
+            gamma: 'paramGamma'
+        }[key];
+        for (const id of ['paramNone', 'paramPower', 'paramExp', 'paramGamma']) {
+            $(id).classList.toggle('visible', id === show);
+        }
+        if (key === 'inverse') {
+            $('powerFormula').textContent = `wᵢ = (n+1−i)^${S.p.toFixed(1)}`;
+        } else {
+            $('powerFormula').textContent = `wᵢ = i^${S.p.toFixed(1)}`;
+        }
+        render();
+    }
+
+    function buildPresets() {
+        $('presetList').innerHTML = PRESETS.map((p, i) =>
+            `<div class="preset-item" data-preset="${i}">
+                <span class="pname">${p.name}</span>
+                <span class="pdesc">${p.desc}</span>
+            </div>`
+        ).join('');
+        $('presetList').addEventListener('click', ev => {
+            const item = ev.target.closest('.preset-item');
+            if (!item) return;
+            const p = PRESETS[Number(item.dataset.preset)];
+            S.total = p.total; S.unit = p.unit;
+            S.periodNum = p.pn; S.periodUnit = p.pu;
+            S.interval = p.it;
+            S.p = p.p ?? S.p; S.q = p.q ?? S.q;
+            S.k = p.k ?? S.k; S.theta = p.theta ?? S.theta;
+            syncInputsFromState();
+            setScheme(p.scheme);
+            toast(`已载入预设 · ${p.name}`);
+        });
+    }
+
+    /* ─────────── Input Syncing ─────────── */
+
+    function syncInputsFromState() {
+        $('totalNum').value = S.total;
+        $('unitText').value = S.unit;
+        $('periodNum').value = S.periodNum;
+        $('periodUnit').value = S.periodUnit;
+        $('intervalNum').value = S.interval;
+        $('intervalSlider').value = Math.min(S.interval, 90);
+        $('intervalVal').textContent = S.interval + ' 天';
+        $('pSlider').value = S.p; $('pVal').textContent = S.p.toFixed(1);
+        $('qSlider').value = S.q; $('qVal').textContent = S.q.toFixed(2);
+        $('kSlider').value = S.k; $('kVal').textContent = S.k.toFixed(1);
+        $('tSlider').value = S.theta; $('tVal').textContent = String(S.theta);
+    }
+
+    function bindInputs() {
+        const readInt = (el, min, max, fallback) => {
+            const v = Math.round(parseFloat(el.value));
+            if (isNaN(v)) return fallback;
+            return Math.max(min, Math.min(max, v));
+        };
+
+        $('totalNum').addEventListener('input', () => {
+            S.total = readInt($('totalNum'), 1, 100000, S.total);
+            render();
+        });
+        $('unitText').addEventListener('input', () => { S.unit = $('unitText').value.trim(); render(); });
+
+        $('periodNum').addEventListener('input', () => {
+            S.periodNum = readInt($('periodNum'), 1, 100, S.periodNum);
+            render();
+        });
+        $('periodUnit').addEventListener('change', () => { S.periodUnit = $('periodUnit').value; render(); });
+
+        $('intervalNum').addEventListener('input', () => {
+            S.interval = readInt($('intervalNum'), 1, 365, S.interval);
+            $('intervalSlider').value = Math.min(S.interval, 90);
+            $('intervalVal').textContent = S.interval + ' 天';
+            render();
+        });
+        $('intervalSlider').addEventListener('input', () => {
+            S.interval = Number($('intervalSlider').value);
+            $('intervalNum').value = S.interval;
+            $('intervalVal').textContent = S.interval + ' 天';
+            render();
+        });
+
+        $('pSlider').addEventListener('input', () => {
+            S.p = Number($('pSlider').value);
+            $('pVal').textContent = S.p.toFixed(1);
+            setFormulaLabel();
+            render();
+        });
+        $('qSlider').addEventListener('input', () => {
+            S.q = Number($('qSlider').value);
+            $('qVal').textContent = S.q.toFixed(2);
+            render();
+        });
+        $('kSlider').addEventListener('input', () => {
+            S.k = Number($('kSlider').value);
+            $('kVal').textContent = S.k.toFixed(1);
+            render();
+        });
+        $('tSlider').addEventListener('input', () => {
+            S.theta = Number($('tSlider').value);
+            $('tVal').textContent = String(S.theta);
+            render();
+        });
+
+        $('withComment').addEventListener('change', () => {
+            S.withComment = $('withComment').checked;
+            render();
+        });
+
+        $('btnCopy').addEventListener('click', copyCode);
+        $('btnDownload').addEventListener('click', downloadTxt);
+
+        const cv = $('chartCanvas');
+        cv.addEventListener('mousemove', onChartMove);
+        cv.addEventListener('mouseleave', onChartLeave);
+
+        window.addEventListener('resize', drawChart);
+    }
+
+    function setFormulaLabel() {
+        if (S.scheme === 'inverse') {
+            $('powerFormula').textContent = `wᵢ = (n+1−i)^${S.p.toFixed(1)}`;
+        } else {
+            $('powerFormula').textContent = `wᵢ = i^${S.p.toFixed(1)}`;
+        }
+    }
+
+    /* ─────────── Utils ─────────── */
+
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function fmtNum(v) {
+        return Math.abs(v - Math.round(v)) < 0.05 ? String(Math.round(v)) : v.toFixed(1);
+    }
+
+    /* ─────────── Init ─────────── */
+
+    buildSchemeList();
+    buildPresets();
+    bindInputs();
+    setScheme('linear');
+    </script>
+</body>
+</html>

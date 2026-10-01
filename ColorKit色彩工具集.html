@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ColorKit — 色彩工具集</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #08080b;
+            --surface: #0f0f13;
+            --surface-2: #16161c;
+            --border: #222230;
+            --accent: #f5c518;
+            --accent-dim: rgba(245, 197, 24, 0.12);
+            --text: #e4e0d6;
+            --text-muted: #6b665e;
+            --text-dim: #3a3832;
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 200px 200px;
+        }
+
+        /* ── Header ── */
+        header {
+            padding: 24px 36px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            background: var(--surface);
+        }
+
+        header h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 26px;
+            font-weight: 400;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        header .sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* ── App Layout ── */
+        .app {
+            display: flex;
+            height: calc(100vh - 73px);
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 310px;
+            min-width: 310px;
+            border-right: 1px solid var(--border);
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 26px;
+            overflow-y: auto;
+            background: var(--surface);
+        }
+
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .panel-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--accent);
+            border-radius: 1px;
+            transform: rotate(45deg);
+            flex-shrink: 0;
+        }
+
+        /* ── Sliders ── */
+        .slider-group { display: flex; flex-direction: column; gap: 12px; }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            width: 14px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .slider-track {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            outline: none;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: #333;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--text);
+            border: 2px solid var(--bg);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 0 1px var(--accent), 0 2px 12px rgba(0,0,0,0.6);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--text);
+            border: 2px solid var(--bg);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 2px 8px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-track {
+            height: 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .slider-value {
+            font-size: 11px;
+            color: var(--text);
+            width: 34px;
+            text-align: right;
+            flex-shrink: 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ── Preview ── */
+        .preview-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1.2;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .preview-wrap:hover { border-color: var(--accent); }
+
+        .checker-bg {
+            position: absolute;
+            inset: 0;
+            background-color: #fff;
+            background-image:
+                linear-gradient(45deg, #ccc 25%, transparent 25%),
+                linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #ccc 75%),
+                linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 14px 14px;
+            background-position: 0 0, 0 7px, 7px -7px, -7px 0px;
+        }
+
+        .preview-fill {
+            position: absolute;
+            inset: 0;
+            transition: background-color 0.12s ease;
+        }
+
+        .preview-bg {
+            position: absolute;
+            inset: 0;
+        }
+
+        .preview-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.4;
+            letter-spacing: 0.02em;
+            white-space: pre-wrap;
+            overflow: hidden;
+            word-break: break-word;
+            pointer-events: none;
+            /* 文字颜色由 JS 按当前颜色直接赋值；阴影由 data-shadow 属性控制 */
+        }
+
+        /* ── Preview text & background controls ── */
+        .pv-ctl { margin-top: 10px; }
+
+        .pv-input {
+            width: 100%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 6px 9px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11.5px;
+            line-height: 1.5;
+            color: var(--text);
+            resize: none;
+            overflow: hidden;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .pv-input::placeholder { color: var(--text-dim); }
+
+        .pv-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-dim);
+        }
+
+        .bg-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        /* 背景色文本输入（支持 HEX / RGB / RGBA / HSL / 颜色名） */
+        .bg-tag {
+            font-size: 9px;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            width: 34px;
+            flex-shrink: 0;
+        }
+
+        .bg-text {
+            flex: 1;
+            min-width: 0;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 5px 9px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11.5px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .bg-text::placeholder { color: var(--text-dim); font-size: 11px; }
+
+        .bg-text:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-dim);
+        }
+
+        /* 内容无法解析时给灰底提示（不算错误，只是未生效） */
+        .bg-text.invalid { background: rgba(255,255,255,0.055); color: var(--text-muted); }
+
+        .bg-warn {
+            font-size: 9.5px;
+            color: var(--text-dim);
+            letter-spacing: 0.02em;
+            margin-top: 5px;
+            min-height: 0;
+        }
+
+        .bg-warn:not(:empty) { color: #d8a13a; }
+
+        /* ── 文字阴影开关与样式 ── */
+        .switch {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+            height: 22px;
+            padding: 0 9px 0 5px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 10.5px;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+        }
+
+        .switch:hover { border-color: var(--accent); }
+
+        .switch-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            flex-shrink: 0;
+            transition: background 0.15s, box-shadow 0.15s;
+        }
+
+        .switch.on { color: var(--accent); background: var(--accent-dim); border-color: var(--accent-dim); }
+        .switch.on .switch-dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+        select#shStyle {
+            font-family: inherit;
+            font-size: 10.5px;
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 4px 6px;
+            outline: none;
+            cursor: pointer;
+            width: 92px;
+            flex-shrink: 0;
+        }
+
+        select#shStyle:focus { border-color: var(--accent); }
+
+        /* 阴影样式（预览文字与色卡文字共用，切换即生效） */
+        [data-shadow="off"] { text-shadow: none !important; }
+        [data-shadow="soft"] { text-shadow: 0 1px 4px rgba(0,0,0,0.28); }
+        [data-shadow="strong"] { text-shadow: 0 2px 6px rgba(0,0,0,0.6), 0 0 2px rgba(0,0,0,0.5); }
+        [data-shadow="outline"] {
+            text-shadow:
+                -1px -1px 0 rgba(0,0,0,0.9), 1px -1px 0 rgba(0,0,0,0.9),
+                -1px 1px 0 rgba(0,0,0,0.9), 1px 1px 0 rgba(0,0,0,0.9);
+        }
+        [data-shadow="glow"] { text-shadow: 0 0 8px currentColor, 0 0 20px currentColor; }
+
+        .bg-swatches {
+            display: flex;
+            gap: 5px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .bg-swatch {
+            flex: 1;
+            height: 17px;
+            min-width: 14px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0;
+            cursor: pointer;
+            transition: border-color 0.15s, transform 0.1s;
+        }
+
+        .bg-swatch:hover { border-color: var(--accent); }
+        .bg-swatch:active { transform: scale(0.92); }
+
+        .bg-swatch.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--text-dim), 0 0 0 2px var(--accent);
+        }
+
+        .bg-picker {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 22px;
+            padding: 0;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: transparent;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .bg-picker:hover { border-color: var(--accent); }
+
+        .bg-picker::-webkit-color-swatch-wrapper { padding: 1px; }
+        .bg-picker::-webkit-color-swatch { border: none; border-radius: 2px; }
+        .bg-picker::-moz-color-swatch { border: none; border-radius: 2px; }
+
+        .bg-swatch { height: 20px; }
+
+        .bg-a {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            width: 68px;
+            flex-shrink: 0;
+        }
+
+        .bg-a input[type="range"] { height: 6px; }
+
+        .bg-a input[type="range"]::-webkit-slider-thumb {
+            width: 12px; height: 12px;
+        }
+
+        .bg-a input[type="range"]::-moz-range-thumb {
+            width: 12px; height: 12px;
+        }
+
+        .bg-a span {
+            font-size: 10px;
+            color: var(--text-muted);
+            width: 22px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .preview-copy {
+            margin-top: 10px;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.15s;
+        }
+
+        .preview-copy:hover { color: var(--accent); }
+
+        /* ── Format List ── */
+        .format-list { display: flex; flex-direction: column; gap: 5px; }
+
+        .format-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 11px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, transform 0.1s;
+            user-select: none;
+        }
+
+        .format-item:hover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .format-item:active { transform: scale(0.97); }
+
+        .format-key {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .format-val {
+            font-size: 11.5px;
+            color: var(--text);
+            user-select: all;
+        }
+
+        .format-cop {
+            font-size: 10px;
+            color: var(--accent);
+            opacity: 0;
+            margin-left: 8px;
+            transition: opacity 0.15s;
+            flex-shrink: 0;
+        }
+
+        .format-item:hover .format-cop { opacity: 1; }
+
+        /* ── Content ── */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            padding: 24px 28px;
+        }
+
+        .section + .section {
+            border-top: 1px solid var(--border);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-shrink: 0;
+        }
+
+        .section-head .panel-title { margin-bottom: 0; }
+
+        .head-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .badge {
+            font-size: 11px;
+            color: var(--text-dim);
+            background: var(--surface-2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .badge.hit {
+            color: var(--accent);
+            border-color: var(--accent-dim);
+            background: var(--accent-dim);
+        }
+
+        .hint {
+            font-size: 10px;
+            color: var(--text-dim);
+            font-weight: 400;
+            letter-spacing: 0;
+            text-transform: none;
+            margin-left: 10px;
+            white-space: nowrap;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 10.5px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.1s;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .btn:active { transform: scale(0.96); }
+
+        select#fmtSel {
+            font-family: inherit;
+            font-size: 10.5px;
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 5px 8px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select#fmtSel:focus { border-color: var(--accent); }
+
+        /* ── Input ── */
+        .input-section { flex: 0 0 auto; }
+
+        .input-section textarea {
+            width: 100%;
+            height: 148px;
+            min-height: 148px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            line-height: 1.75;
+            color: var(--text);
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-section textarea::placeholder { color: var(--text-dim); font-size: 12px; }
+
+        .input-section textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-dim);
+        }
+
+        /* ── Live Chips ── */
+        .chips-wrap {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            min-height: 34px;
+        }
+
+        .chips-wrap::-webkit-scrollbar { height: 4px; }
+        .chips-wrap::-webkit-scrollbar-track { background: transparent; }
+        .chips-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .chips-empty {
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-dim);
+            font-size: 11px;
+            padding: 8px 14px;
+            flex-shrink: 0;
+        }
+
+        .chip {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 10px 5px 6px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            user-select: none;
+            transition: border-color 0.15s, background 0.15s, transform 0.1s;
+            flex-shrink: 0;
+            max-width: 240px;
+        }
+
+        .chip:hover {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .chip:active { transform: scale(0.97); }
+
+        .chip-swatch {
+            position: relative;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.14);
+            flex-shrink: 0;
+            background-color: #fff;
+            background-image:
+                linear-gradient(45deg, #bbb 25%, transparent 25%),
+                linear-gradient(-45deg, #bbb 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #bbb 75%),
+                linear-gradient(-45deg, transparent 75%, #bbb 75%);
+            background-size: 8px 8px;
+            background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+        }
+
+        .chip-swatch i { position: absolute; inset: 0; }
+
+        .chip-type {
+            font-size: 8px;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+
+        .chip-val {
+            font-size: 11px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── Output ── */
+        .output-section {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        .output-section::-webkit-scrollbar { width: 6px; }
+        .output-section::-webkit-scrollbar-track { background: transparent; }
+        .output-section::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .output-section::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+        .output-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 14px;
+            padding-bottom: 8px;
+        }
+
+        .output-empty {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+            color: var(--text-dim);
+            font-size: 12px;
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+        }
+
+        /* ── Color Cards ── */
+        .color-card {
+            position: relative;
+            aspect-ratio: 16 / 10;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            opacity: 0;
+            animation: cardIn 0.4s ease forwards;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            user-select: none;
+        }
+
+        .color-card:hover {
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 10px 32px rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+
+        .color-card:active {
+            transform: scale(0.97);
+            transition-duration: 0.08s;
+        }
+
+        .card-checker {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-color: #fff;
+            background-image:
+                linear-gradient(45deg, #bbb 25%, transparent 25%),
+                linear-gradient(-45deg, #bbb 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #bbb 75%),
+                linear-gradient(-45deg, transparent 75%, #bbb 75%);
+            background-size: 10px 10px;
+            background-position: 0 0, 0 5px, 5px -5px, -5px 0;
+        }
+
+        .card-fill {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+        }
+
+        .card-bg {
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .card-bg-tag {
+            position: absolute;
+            left: 6px;
+            bottom: 6px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.55);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.8);
+            font-size: 8px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
+
+        .card-bg-tag i {
+            width: 9px;
+            height: 9px;
+            border-radius: 2px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .card-label {
+            position: relative;
+            z-index: 2;
+            font-family: 'DM Mono', monospace;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.02em;
+            pointer-events: none;
+            padding: 4px 10px;
+            word-break: break-word;
+            white-space: pre-wrap;
+            text-align: center;
+            line-height: 1.3;
+            max-width: 92%;
+            max-height: 88%;
+            overflow: hidden;
+            /* 文字色 = 该色卡自身的颜色（由 JS 直接赋值）；阴影由 data-shadow 控制 */
+        }
+
+        .card-label.dark-text {
+            color: #111;
+            text-shadow:
+                -1px -1px 0 rgba(255,255,255,0.9),
+                1px -1px 0 rgba(255,255,255,0.9),
+                -1px 1px 0 rgba(255,255,255,0.9),
+                1px 1px 0 rgba(255,255,255,0.9),
+                0 0 6px rgba(255,255,255,0.3);
+            font-weight: 700;
+        }
+
+        .card-label.light-text {
+            color: #fff;
+            text-shadow:
+                -1px -1px 0 rgba(0,0,0,0.9),
+                1px -1px 0 rgba(0,0,0,0.9),
+                -1px 1px 0 rgba(0,0,0,0.9),
+                1px 1px 0 rgba(0,0,0,0.9),
+                0 0 6px rgba(0,0,0,0.3);
+            font-weight: 700;
+        }
+
+        .card-copy {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 2;
+            font-family: inherit;
+            font-size: 9.5px;
+            letter-spacing: 0.08em;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 4px;
+            padding: 3px 8px;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(-3px);
+            transition: opacity 0.15s, transform 0.15s, border-color 0.15s, color 0.15s;
+        }
+
+        .color-card:hover .card-copy { opacity: 1; transform: none; }
+        .card-copy:hover { border-color: var(--accent); color: var(--accent); }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(16px);
+            background: var(--accent);
+            color: var(--bg);
+            padding: 9px 22px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'DM Mono', monospace;
+            opacity: 0;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            z-index: 10000;
+            pointer-events: none;
+            white-space: nowrap;
+            max-width: 80vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 860px) {
+            .app { flex-direction: column; height: auto; }
+            .sidebar {
+                width: 100%;
+                min-width: unset;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 18px 16px;
+                gap: 18px;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .sidebar > div { flex: 1; min-width: 200px; }
+            .preview-wrap { max-width: 420px; }
+            .pv-input { max-width: 420px; }
+            .section { padding: 18px 16px; }
+            .output-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+            header { padding: 18px 16px; }
+            .section-head { flex-wrap: wrap; }
+            .hint { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ColorKit</h1>
+        <span class="sub">色彩工具集</span>
+    </header>
+
+    <div class="app">
+        <!-- ─── Sidebar ─── -->
+        <aside class="sidebar">
+            <div>
+                <div class="panel-title">RGB 调色板</div>
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <span class="slider-label">R</span>
+                        <div class="slider-track">
+                            <input type="range" id="sR" min="0" max="255" value="102">
+                        </div>
+                        <span class="slider-value" id="vR">102</span>
+                    </div>
+                    <div class="slider-row">
+                        <span class="slider-label">G</span>
+                        <div class="slider-track">
+                            <input type="range" id="sG" min="0" max="255" value="204">
+                        </div>
+                        <span class="slider-value" id="vG">204</span>
+                    </div>
+                    <div class="slider-row">
+                        <span class="slider-label">B</span>
+                        <div class="slider-track">
+                            <input type="range" id="sB" min="0" max="255" value="255">
+                        </div>
+                        <span class="slider-value" id="vB">255</span>
+                    </div>
+                    <div class="slider-row">
+                        <span class="slider-label">A</span>
+                        <div class="slider-track">
+                            <input type="range" id="sA" min="0" max="100" value="100">
+                        </div>
+                        <span class="slider-value" id="vA">1.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel-title">预览 <span style="font-weight:400;color:var(--text-dim);letter-spacing:0;font-size:9px;text-transform:none">(点击复制 HEX)</span></div>
+                <div class="preview-wrap" id="previewWrap" title="点击复制当前颜色 HEX">
+                    <div class="checker-bg"></div>
+                    <div class="preview-bg" id="previewBg"></div>
+                    <div class="preview-fill" id="preview"></div>
+                    <div class="preview-text" id="previewText"></div>
+                </div>
+                <div class="preview-copy" id="previewCopy">点击预览复制 HEX</div>
+
+                <div class="pv-ctl">
+                    <textarea class="pv-input" id="pvText" rows="1" spellcheck="false"
+                        placeholder="预览文字，可留空（默认 ColorKit 色彩工具集）"
+                        title="输入用于预览效果的文字，支持中英文与换行"></textarea>
+
+                    <div class="bg-row">
+                        <span class="bg-tag">文字色</span>
+                        <input type="text" class="bg-text" id="pvFgText" spellcheck="false" autocomplete="off"
+                            title="当前文字颜色（与上方 RGB 调色板联动）：可直接输入 HEX、rgb()、hsl()、颜色名">
+                        <input type="color" class="bg-picker" id="fgPicker" value="#66ccff" title="用取色器选择文字颜色">
+                    </div>
+
+                    <div class="bg-row">
+                        <span class="bg-tag">背景色</span>
+                        <input type="text" class="bg-text" id="pvBgText" spellcheck="false" autocomplete="off"
+                            placeholder="留空为透明"
+                            title="输入背景色：HEX(#RGB/#RRGGBB/#RRGGBBAA)、rgb()、rgba()、hsl()、hwb()、颜色名，留空为透明">
+                        <input type="color" class="bg-picker" id="bgPicker" value="#ead3ad" title="用取色器选择背景色">
+                    </div>
+
+                    <div class="bg-row">
+                        <div class="bg-swatches" id="bgSwatches">
+                            <button class="bg-swatch" data-bg="" style="background-color:#fff;background-image:linear-gradient(45deg,#bbb 25%,transparent 25%),linear-gradient(-45deg,#bbb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#bbb 75%),linear-gradient(-45deg,transparent 75%,#bbb 75%);background-size:8px 8px;background-position:0 0,0 4px,4px -4px,-4px 0" title="透明背景"></button>
+                            <button class="bg-swatch" data-bg="#000000" style="background:#000000" title="黑色背景"></button>
+                            <button class="bg-swatch" data-bg="#ead3ad" style="background:#ead3ad" title="米色背景 #EAD3AD"></button>
+                            <button class="bg-swatch" data-bg="#808080" style="background:#808080" title="灰色背景"></button>
+                            <button class="bg-swatch" data-bg="#f5f5f5" style="background:#f5f5f5" title="浅灰背景"></button>
+                            <button class="bg-swatch" data-bg="#ffffff" style="background:#ffffff" title="白色背景"></button>
+                            <button class="bg-swatch" data-bg="#0f0f13" style="background:#0f0f13" title="深色界面背景"></button>
+                        </div>
+                        <div class="bg-a">
+                            <input type="range" id="bgA" min="0" max="100" value="100" title="背景不透明度">
+                            <span id="bgAv">100%</span>
+                        </div>
+                    </div>
+                    <div class="bg-row">
+                        <span class="bg-tag">阴影</span>
+                        <button type="button" class="switch on" id="shToggle" role="switch" aria-checked="true"
+                            title="开启/关闭文字阴影（预览与色卡同时生效，便于对比可读性）">
+                            <span class="switch-dot"></span><span class="switch-txt" id="shState">开</span>
+                        </button>
+                        <select id="shStyle" title="阴影样式">
+                            <option value="soft" selected>柔和投影</option>
+                            <option value="strong">加深投影</option>
+                            <option value="outline">四向描边</option>
+                            <option value="glow">外发光</option>
+                        </select>
+                    </div>
+                    <div class="bg-warn" id="bgWarn"></div>
+                </div>
+            </div>
+
+            <div>
+                <div class="panel-title">格式转换 <span style="font-weight:400;color:var(--text-dim);letter-spacing:0;font-size:9px;text-transform:none">(点击复制)</span></div>
+                <div class="format-list" id="fmtList"></div>
+            </div>
+        </aside>
+
+        <!-- ─── Main Content ─── -->
+        <main class="content">
+            <div class="section input-section">
+                <div class="section-head">
+                    <div class="panel-title">输入</div>
+                    <div class="head-actions">
+                        <span class="badge" id="inBadge"></span>
+                        <button class="btn" id="btnPaste" title="从剪贴板粘贴到输入框">粘贴</button>
+                        <button class="btn" id="btnSample" title="载入示例颜色">示例</button>
+                        <button class="btn" id="btnClear" title="清空输入框">清空</button>
+                    </div>
+                </div>
+                <textarea id="inp" placeholder="粘贴或输入颜色代码，支持多行，自动识别：&#10;&#10;#66CCFF  /  #66ccffcc  /  ff8800&#10;rgb(255, 128, 0)  /  rgb(100% 0% 0% / 0.5)&#10;rgba(0, 0, 0, 0.5)&#10;hsl(280, 60%, 50%)  /  hsla(120 50% 50% / 0.3)&#10;hwb(220, 40%, 20%)  /  hsv(200, 80%, 90%)&#10;tomato  /  transparent"></textarea>
+                <div class="chips-wrap" id="chipsWrap">
+                    <div class="chips-empty">输入后在此实时预览识别结果，点击色块可复制</div>
+                </div>
+            </div>
+
+            <div class="section output-section">
+                <div class="section-head">
+                    <div class="panel-title">输出 <span class="hint">单击复制 · 双击载入调色板 · 右键设为背景色</span></div>
+                    <div class="head-actions">
+                        <span class="badge" id="badge"></span>
+                        <select id="fmtSel">
+                            <option value="HEX">HEX</option>
+                            <option value="RGB">RGB</option>
+                            <option value="RGBA" selected>RGBA</option>
+                            <option value="HSL">HSL</option>
+                        </select>
+                        <button class="btn" id="btnCopyAll" title="按所选格式复制全部颜色（每行一个）">复制全部</button>
+                    </div>
+                </div>
+                <div class="output-grid" id="grid">
+                    <div class="output-empty">在上方输入颜色代码，解析结果将显示在此处</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    (() => {
+        /* ── DOM refs ── */
+        const $ = s => document.querySelector(s);
+        const sR = $('#sR'), sG = $('#sG'), sB = $('#sB'), sA = $('#sA');
+        const vR = $('#vR'), vG = $('#vG'), vB = $('#vB'), vA = $('#vA');
+        const preview = $('#preview'), previewWrap = $('#previewWrap'), previewCopy = $('#previewCopy');
+        const previewBg = $('#previewBg'), previewText = $('#previewText');
+        const pvText = $('#pvText'), bgSwatches = $('#bgSwatches'), bgPicker = $('#bgPicker');
+        const bgText = $('#pvBgText'), fgText = $('#pvFgText'), fgPicker = $('#fgPicker');
+        const bgWarn = $('#bgWarn'), shToggle = $('#shToggle'), shState = $('#shState'), shStyle = $('#shStyle');
+        const bgAInput = $('#bgA'), bgAv = $('#bgAv');
+        const fmtList = $('#fmtList');
+        const inp = $('#inp'), chipsWrap = $('#chipsWrap');
+        const grid = $('#grid'), badge = $('#badge'), inBadge = $('#inBadge');
+        const btnPaste = $('#btnPaste'), btnSample = $('#btnSample'), btnClear = $('#btnClear');
+        const btnCopyAll = $('#btnCopyAll'), fmtSel = $('#fmtSel');
+        const toast = $('#toast');
+
+        const DEFAULT_PV_TEXT = 'ColorKit 色彩工具集 Aa Bb 0123';
+
+        let curR = 102, curG = 204, curB = 255, curA = 1;
+        let bgHex = '', bgA = 1;
+        let pvTextVal = DEFAULT_PV_TEXT;
+        let shadowOn = true, shadowStyle = 'soft';
+        let lastColors = [];
+        let dblTimer, toastTimer;
+
+        /* ── Named colors ── */
+        const NAMED_HEX = (`
+            aliceblue:#f0f8ff antiquewhite:#faebd7 aqua:#00ffff aquamarine:#7fffd4 azure:#f0ffff beige:#f5f5dc bisque:#ffe4c4 black:#000000 blanchedalmond:#ffebcd blue:#0000ff blueviolet:#8a2be2 brown:#a52a2a burlywood:#deb887 cadetblue:#5f9ea0 chartreuse:#7fff00 chocolate:#d2691e coral:#ff7f50 cornflowerblue:#6495ed cornsilk:#fff8dc crimson:#dc143c cyan:#00ffff darkblue:#00008b darkcyan:#008b8b darkgoldenrod:#b8860b darkgray:#a9a9a9 darkgreen:#006400 darkgrey:#a9a9a9 darkkhaki:#bdb76b darkmagenta:#8b008b darkolivegreen:#556b2f darkorange:#ff8c00 darkorchid:#9932cc darkred:#8b0000 darksalmon:#e9967a darkseagreen:#8fbc8f darkslateblue:#483d8b darkslategray:#2f4f4f darkslategrey:#2f4f4f darkturquoise:#00ced1 darkviolet:#9400d3 deeppink:#ff1493 deepskyblue:#00bfff dimgray:#696969 dimgrey:#696969 dodgerblue:#1e90ff firebrick:#b22222 floralwhite:#fffaf0 forestgreen:#228b22 fuchsia:#ff00ff gainsboro:#dcdcdc ghostwhite:#f8f8ff gold:#ffd700 goldenrod:#daa520 gray:#808080 green:#008000 greenyellow:#adff2f grey:#808080 honeydew:#f0fff0 hotpink:#ff69b4 indianred:#cd5c5c indigo:#4b0082 ivory:#fffff0 khaki:#f0e68c lavender:#e6e6fa lavenderblush:#fff0f5 lawngreen:#7cfc00 lemonchiffon:#fffacd lightblue:#add8e6 lightcoral:#f08080 lightcyan:#e0ffff lightgoldenrodyellow:#fafad2 lightgray:#d3d3d3 lightgreen:#90ee90 lightgrey:#d3d3d3 lightpink:#ffb6c1 lightsalmon:#ffa07a lightseagreen:#20b2aa lightskyblue:#87cefa lightslategray:#778899 lightslategrey:#778899 lightsteelblue:#b0c4de lightyellow:#ffffe0 lime:#00ff00 limegreen:#32cd32 linen:#faf0e6 magenta:#ff00ff maroon:#800000 mediumaquamarine:#66cdaa mediumblue:#0000cd mediumorchid:#ba55d3 mediumpurple:#9370db mediumseagreen:#3cb371 mediumslateblue:#7b68ee mediumspringgreen:#00fa9a mediumturquoise:#48d1cc mediumvioletred:#c71585 midnightblue:#191970 mintcream:#f5fffa mistyrose:#ffe4e1 moccasin:#ffe4b5 navajowhite:#ffdead navy:#000080 oldlace:#fdf5e6 olive:#808000 olivedrab:#6b8e23 orange:#ffa500 orangered:#ff4500 orchid:#da70d6 palegoldenrod:#eee8aa palegreen:#98fb98 paleturquoise:#afeeee palevioletred:#db7093 papayawhip:#ffefd5 peachpuff:#ffdab9 peru:#cd853f pink:#ffc0cb plum:#dda0dd powderblue:#b0e0e6 purple:#800080 rebeccapurple:#663399 red:#ff0000 rosybrown:#bc8f8f royalblue:#4169e1 saddlebrown:#8b4513 salmon:#fa8072 sandybrown:#f4a460 seagreen:#2e8b57 seashell:#fff5ee sienna:#a0522d silver:#c0c0c0 skyblue:#87ceeb slateblue:#6a5acd slategray:#708090 slategrey:#708090 snow:#fffafa springgreen:#00ff7f steelblue:#4682b4 tan:#d2b48c teal:#008080 thistle:#d8bfd8 tomato:#ff6347 turquoise:#40e0d0 violet:#ee82ee wheat:#f5deb3 white:#ffffff whitesmoke:#f5f5f5 yellow:#ffff00 yellowgreen:#9acd32 transparent:#00000000
+        `).trim().split(/\s+/).reduce((o, p) => {
+            const [n, h] = p.split(':');
+            o[n] = h;
+            return o;
+        }, {});
+        const namesRe = new RegExp('\\b(?:' + Object.keys(NAMED_HEX).join('|') + ')\\b', 'gi');
+
+        /* ── Color Utilities ── */
+        function parseHex(str) {
+            let h = str.replace(/^#/, '');
+            if (h.length === 3 || h.length === 4) h = [...h].map(c => c + c).join('');
+            if (h.length !== 6 && h.length !== 8) return null;
+            if (!/^[0-9a-fA-F]+$/.test(h)) return null;
+            const r = parseInt(h.slice(0, 2), 16);
+            const g = parseInt(h.slice(2, 4), 16);
+            const b = parseInt(h.slice(4, 6), 16);
+            const a = h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1;
+            return { r, g, b, a };
+        }
+
+        function hslToRgb(h, s, l) {
+            h = (((h % 360) + 360) % 360) / 60;      /* 色相归一到 0–6 扇区 */
+            s /= 100; l /= 100;
+            const c = (1 - Math.abs(2 * l - 1)) * s;
+            const x = c * (1 - Math.abs((h % 2) - 1));
+            const m = l - c / 2;
+            let r, g, b;
+            if      (h < 1) { r = c; g = x; b = 0; }
+            else if (h < 2) { r = x; g = c; b = 0; }
+            else if (h < 3) { r = 0; g = c; b = x; }
+            else if (h < 4) { r = 0; g = x; b = c; }
+            else if (h < 5) { r = x; g = 0; b = c; }
+            else            { r = c; g = 0; b = x; }
+            return { r: Math.round((r + m) * 255), g: Math.round((g + m) * 255), b: Math.round((b + m) * 255) };
+        }
+
+        function hwbToRgb(h, w, b) {
+            h = ((h % 360) + 360) % 360; w /= 100; b /= 100;
+            const c = 1 - w - b;
+            if (c <= 0) return { r: Math.round(w * 255), g: Math.round(w * 255), b: Math.round(w * 255) };
+            const base = hslToRgb(h, 100, 50);
+            return {
+                r: Math.round((base.r / 255 * c + w) * 255),
+                g: Math.round((base.g / 255 * c + w) * 255),
+                b: Math.round((base.b / 255 * c + w) * 255)
+            };
+        }
+
+        function hsvToRgb(h, s, v) {
+            h = ((h % 360) + 360) % 360; s /= 100; v /= 100;
+            const c = v * s;
+            const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+            const m = v - c;
+            let r, g, b;
+            if      (h < 60)  { r = c; g = x; b = 0; }
+            else if (h < 120) { r = x; g = c; b = 0; }
+            else if (h < 180) { r = 0; g = c; b = x; }
+            else if (h < 240) { r = 0; g = x; b = c; }
+            else if (h < 300) { r = x; g = 0; b = c; }
+            else              { r = c; g = 0; b = x; }
+            return { r: Math.round((r + m) * 255), g: Math.round((g + m) * 255), b: Math.round((b + m) * 255) };
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+            let h = 0, s = 0, l = (mx + mn) / 2;
+            if (mx !== mn) {
+                const d = mx - mn;
+                s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+                if (mx === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+                else if (mx === g) h = ((b - r) / d + 2) / 6;
+                else h = ((r - g) / d + 4) / 6;
+            }
+            return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+        }
+
+        function rgbToHsv(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+            let h = 0;
+            if (d) {
+                if (mx === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+                else if (mx === g) h = ((b - r) / d + 2) / 6;
+                else h = ((r - g) / d + 4) / 6;
+            }
+            return { h: Math.round(h * 360), s: Math.round((mx === 0 ? 0 : d / mx) * 100), v: Math.round(mx * 100) };
+        }
+
+        function rgbToHwb(r, g, b) {
+            const h = rgbToHsl(r, g, b).h;
+            const mx = Math.max(r, g, b) / 255, mn = Math.min(r, g, b) / 255;
+            return { h, w: Math.round(mn * 100), b: Math.round((1 - mx) * 100) };
+        }
+
+        const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+        function numVal(v, max) {
+            if (v == null || v === '') return 0;
+            v = String(v).trim();
+            if (v.endsWith('%')) return clamp(parseFloat(v) / 100 * max, 0, max);
+            return clamp(parseFloat(v), 0, max);
+        }
+
+        function parseAlpha(s) {
+            if (s == null || s === '') return 1;
+            s = String(s).trim();
+            return clamp(s.endsWith('%') ? parseFloat(s) / 100 : parseFloat(s), 0, 1);
+        }
+
+        function parseHue(v) {
+            v = String(v).trim();
+            let deg = parseFloat(v);
+            if (/turn$/i.test(v)) deg *= 360;
+            else if (/grad$/i.test(v)) deg *= 0.9;
+            else if (/rad$/i.test(v)) deg *= 180 / Math.PI;
+            return ((deg % 360) + 360) % 360;
+        }
+
+        function toHex(r, g, b) {
+            return '#' + [r, g, b].map(v => Math.max(0, Math.min(255, v)).toString(16).padStart(2, '0')).join('');
+        }
+
+        function toHex8(r, g, b, a) {
+            const ah = Math.round(a * 255).toString(16).padStart(2, '0');
+            return toHex(r, g, b) + (a < 1 ? ah : '');
+        }
+
+        function roundA(a) {
+            if (a >= 1) return '1';
+            return String(parseFloat(a.toFixed(3)));
+        }
+
+        function hexToRgb(h) {
+            const c = parseHex(h);
+            return c ? { r: c.r, g: c.g, b: c.b } : { r: 0, g: 0, b: 0 };
+        }
+
+        function toHexA(r, g, b, a) {
+            return toHex(r, g, b) + (a < 1 ? Math.round(a * 255).toString(16).padStart(2, '0') : '');
+        }
+
+        /* ── Preview background & text ── */
+        function bgCss() {
+            if (!bgHex || bgA <= 0) return 'transparent';
+            const c = hexToRgb(bgHex);
+            return `rgba(${c.r},${c.g},${c.b},${bgA})`;
+        }
+
+        function bgLabel() {
+            if (!bgHex) return '透明';
+            const c = hexToRgb(bgHex);
+            return toHexA(c.r, c.g, c.b, bgA).toUpperCase();
+        }
+
+        function applyBg() {
+            previewBg.style.background = bgCss();
+            /* 有背景层时隐藏色块层，让预览直接呈现「文字色 on 背景色」的搭配 */
+            preview.style.display = (bgHex && bgA > 0) ? 'none' : '';
+            bgAInput.value = Math.round(bgA * 100);
+            bgAv.textContent = Math.round(bgA * 100) + '%';
+            bgAInput.style.background = `linear-gradient(to right, rgba(0,0,0,0), ${bgHex || '#ffffff'})`;
+            bgSwatches.querySelectorAll('.bg-swatch').forEach(b => {
+                b.classList.toggle('active', (b.dataset.bg || '') === (bgHex || '').toLowerCase());
+            });
+            /* 输入框回显：HEX 带 alpha 时用 #RRGGBBAA，透明时留空；正在输入时不覆盖 */
+            if (!bgEditing) {
+                bgText.value = bgHex ? (bgA < 1 ? toHexA(hexToRgb(bgHex).r, hexToRgb(bgHex).g, hexToRgb(bgHex).b, bgA) : bgHex) : '';
+            }
+            bgText.classList.toggle('invalid', !!(bgText.value.trim() && !parseSingleColor(bgText.value)));
+            if (bgHex) bgPicker.value = bgHex;
+            renderPreviewText();
+        }
+
+        function normHex(h) {
+            if (!h) return '';
+            const c = parseHex(h);
+            return c ? toHex(c.r, c.g, c.b) : (bgHex || '');
+        }
+
+        function setBg(hex) {
+            bgHex = normHex((hex || '').toLowerCase());
+            bgA = bgHex ? (bgA <= 0 ? 1 : bgA) : 0;
+            applyBg();
+        }
+
+        /* ── 文字色（当前颜色）── */
+        let fgEditing = false, bgEditing = false;
+
+        function applyFgField() {
+            /* 正在手动输入时不要覆盖用户输入 */
+            if (!fgEditing) fgText.value = toHex(curR, curG, curB).toUpperCase();
+            fgText.classList.toggle('invalid', !!(fgText.value.trim() && !parseSingleColor(fgText.value)));
+            fgPicker.value = toHex(curR, curG, curB);
+        }
+
+        /* ── 预览：文字用当前颜色直接着色 ── */
+        function renderPreviewText() {
+            const t = pvTextVal || DEFAULT_PV_TEXT;
+            previewText.textContent = t;
+            previewText.style.color = `rgba(${curR},${curG},${curB},${curA})`;
+            applyShadow();
+            applyFgField();
+            updateWarn();
+        }
+
+        /* 阴影开关：预览与色卡文字统一由 data-shadow 属性控制 */
+        function applyShadow() {
+            const mode = shadowOn ? shadowStyle : 'off';
+            previewText.dataset.shadow = mode;
+            grid.querySelectorAll('.card-label').forEach(l => { l.dataset.shadow = mode; });
+            shToggle.classList.toggle('on', shadowOn);
+            shToggle.setAttribute('aria-checked', shadowOn ? 'true' : 'false');
+            shState.textContent = shadowOn ? '开' : '关';
+        }
+
+        /* 文字色与背景色过于接近时给出提示（不改变颜色本身，忠实呈现） */
+        function updateWarn() {
+            if (bgWarn !== undefined && bgWarn) {
+                const cr = bgHex && bgA > 0.02 ? contrast(relLum(curR, curG, curB), bgLum()) : 21;
+                const low = bgHex && bgA > 0.02 && cr < 2;
+                bgWarn.textContent = low ? `文字色与背景色对比度偏低（${cr.toFixed(1)}:1），搭配后可读性不佳` : '';
+            }
+        }
+
+        /* ── 对比度（WCAG 相对亮度，用于提示与自动文字色） ── */
+        function relLum(r, g, b) {
+            const f = v => {
+                v /= 255;
+                return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+            };
+            return Number(0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b));
+        }
+
+        function contrast(l1, l2) {
+            const a = Math.max(Number(l1), Number(l2)), b = Math.min(Number(l1), Number(l2));
+            return (a + 0.05) / (b + 0.05);
+        }
+
+        /* 预览文字所在层的亮度：背景层按自身透明度叠在棋盘格上 */
+        function bgLum() {
+            if (!bgHex) return 0.75;               /* 棋盘格平均亮度 */
+            const c = hexToRgb(bgHex);
+            return Number(relLum(c.r, c.g, c.b) * bgA + 0.75 * (1 - bgA));
+        }
+
+        /* 无背景层时，色卡自身颜色作底，文字取对比色保证可读 */
+        function lumPick(L) { return contrast(L, 0) >= contrast(L, 1) ? 'dark-text' : 'light-text'; }
+        function contrastClass(r, g, b) { return lumPick(relLum(r, g, b)); }
+
+        /* 卡片：该色卡的颜色即「文字色」，直接写在背景层之上。
+           没有背景层时颜色本身作底，此时按对比度选深/浅字保证可读 */
+        function cardLabelCss(r, g, b) {
+            if (!bgHex || bgA <= 0) {
+                const cls = contrastClass(r, g, b);
+                return { color: cls === 'dark-text' ? '#111' : '#fff', cls };
+            }
+            return { color: `rgb(${r},${g},${b})`, cls: '' };
+        }
+
+        /* ── Parse input text ── */
+        const hexRe = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{4}|[0-9a-fA-F]{3})(?![0-9a-fA-F])/g;
+        const rgbRe = /\brgba?\(\s*([\d.]+%?)\s*[,\s/]\s*([\d.]+%?)\s*[,\s/]\s*([\d.]+%?)\s*(?:[,\s/]\s*([\d.]+%?))?\s*\)/gi;
+        const hslRe = /\bhsla?\(\s*(-?[\d.]+(?:deg|grad|rad|turn)?)\s*[,\s]\s*([\d.]+%?)\s*[,\s]\s*([\d.]+%?)\s*(?:[,\s/]\s*([\d.]+%?))?\s*\)/gi;
+        const hwbRe = /\bhwb\(\s*(-?[\d.]+(?:deg|grad|rad|turn)?)\s*[,\s]\s*([\d.]+%?)\s*[,\s]\s*([\d.]+%?)\s*(?:[,\s/]\s*([\d.]+%?))?\s*\)/gi;
+        const hsvRe = /\bhsva?\(\s*(-?[\d.]+(?:deg|grad|rad|turn)?)\s*[,\s]\s*([\d.]+%?)\s*[,\s]\s*([\d.]+%?)\s*(?:[,\s/]\s*([\d.]+%?))?\s*\)/gi;
+
+        function parseColors(text) {
+            const results = [];
+            const seen = new Set();
+
+            const push = (raw, type, r, g, b, a) => {
+                r = Math.round(clamp(r, 0, 255));
+                g = Math.round(clamp(g, 0, 255));
+                b = Math.round(clamp(b, 0, 255));
+                a = clamp(a, 0, 1);
+                const key = `${r},${g},${b},${a}`;
+                if (seen.has(key)) return;
+                seen.add(key);
+                results.push({ raw, type, display: type === 'HEX' ? raw.toUpperCase() : raw, r, g, b, a });
+            };
+
+            let m;
+
+            // Hex (#rrggbb / #rrggbbaa / #rgb / #rgba)
+            while ((m = hexRe.exec(text)) !== null) {
+                const c = parseHex(m[0]);
+                if (c) push(m[0], 'HEX', c.r, c.g, c.b, c.a);
+            }
+
+            // Hex without # (whole line only)
+            for (const line of text.split(/\r?\n/)) {
+                const t = line.trim();
+                if (/^[0-9a-fA-F]{3,8}$/.test(t)) {
+                    const c = parseHex(t);
+                    if (c) push(t, 'HEX', c.r, c.g, c.b, c.a);
+                }
+            }
+
+            // rgb / rgba (逗号、空格或空格+斜杠语法，支持百分比)
+            while ((m = rgbRe.exec(text)) !== null) {
+                const r = numVal(m[1], 255), g = numVal(m[2], 255), b = numVal(m[3], 255), a = parseAlpha(m[4]);
+                const isRgba = /^rgba/i.test(m[0]);
+                push(m[0], isRgba ? 'RGBA' : 'RGB', r, g, b, a);
+            }
+
+            // hsl / hsla (支持 deg / turn / grad / rad 与负角度)
+            while ((m = hslRe.exec(text)) !== null) {
+                const h = parseHue(m[1]);
+                const s = numVal(m[2], 100), l = numVal(m[3], 100), a = parseAlpha(m[4]);
+                const c = hslToRgb(h, s, l);
+                push(m[0], /^hsla/i.test(m[0]) ? 'HSLA' : 'HSL', c.r, c.g, c.b, a);
+            }
+
+            // hwb
+            while ((m = hwbRe.exec(text)) !== null) {
+                const h = parseHue(m[1]);
+                const w = numVal(m[2], 100), b = numVal(m[3], 100), a = parseAlpha(m[4]);
+                const c = hwbToRgb(h, w, b);
+                push(m[0], 'HWB', c.r, c.g, c.b, a);
+            }
+
+            // hsv / hsva
+            while ((m = hsvRe.exec(text)) !== null) {
+                const h = parseHue(m[1]);
+                const s = numVal(m[2], 100), v = numVal(m[3], 100), a = parseAlpha(m[4]);
+                const c = hsvToRgb(h, s, v);
+                push(m[0], /^hsva/i.test(m[0]) ? 'HSVA' : 'HSV', c.r, c.g, c.b, a);
+            }
+
+            // Named colors
+            while ((m = namesRe.exec(text)) !== null) {
+                const name = m[0].toLowerCase();
+                const c = parseHex(NAMED_HEX[name]);
+                if (c) push(name, 'NAME', c.r, c.g, c.b, c.a);
+            }
+
+            return results;
+        }
+
+        /* ── 解析单个颜色（用于背景色输入框），复用上面的全部语法 ── */
+        const NAMES_SET = new Set(Object.keys(NAMED_HEX));
+
+        function parseSingleColor(str) {
+            const t = String(str || '').trim();
+            if (!t) return null;
+
+            const mk = (r, g, b, a, explicitA) => ({
+                r: Math.round(clamp(r, 0, 255)),
+                g: Math.round(clamp(g, 0, 255)),
+                b: Math.round(clamp(b, 0, 255)),
+                a: clamp(a, 0, 1),
+                explicitA
+            });
+
+            let m;
+
+            /* HEX：#rgb / #rgba / #rrggbb / #rrggbbaa，也允许省略 # */
+            if (/^#?[0-9a-fA-F]{3,8}$/.test(t)) {
+                const c = parseHex(t);
+                if (c) return mk(c.r, c.g, c.b, c.a, t.replace(/^#/, '').length > 4);
+            }
+
+            /* transparent / 颜色名 */
+            if (/^transparent$/i.test(t)) return mk(0, 0, 0, 0, true);
+            const name = t.toLowerCase();
+            if (NAMES_SET.has(name)) {
+                const c = parseHex(NAMED_HEX[name]);
+                if (c) return mk(c.r, c.g, c.b, c.a, false);
+            }
+
+            /* 函数式语法：套用与批量解析相同的正则 */
+            const single = re => {
+                re.lastIndex = 0;
+                const x = re.exec(t);
+                re.lastIndex = 0;
+                return x;
+            };
+
+            if ((m = single(rgbRe))) {
+                const a = parseAlpha(m[4]);
+                return mk(numVal(m[1], 255), numVal(m[2], 255), numVal(m[3], 255), a, m[4] != null && m[4] !== '');
+            }
+            if ((m = single(hslRe))) {
+                const c = hslToRgb(parseHue(m[1]), numVal(m[2], 100), numVal(m[3], 100));
+                const a = parseAlpha(m[4]);
+                return mk(c.r, c.g, c.b, a, m[4] != null && m[4] !== '');
+            }
+            if ((m = single(hwbRe))) {
+                const c = hwbToRgb(parseHue(m[1]), numVal(m[2], 100), numVal(m[3], 100));
+                const a = parseAlpha(m[4]);
+                return mk(c.r, c.g, c.b, a, m[4] != null && m[4] !== '');
+            }
+            if ((m = single(hsvRe))) {
+                const c = hsvToRgb(parseHue(m[1]), numVal(m[2], 100), numVal(m[3], 100));
+                const a = parseAlpha(m[4]);
+                return mk(c.r, c.g, c.b, a, m[4] != null && m[4] !== '');
+            }
+
+            return null;
+        }
+
+        /* 文本输入 → 背景色状态 */
+        function updateBgFromText(raw) {
+            const text = String(raw == null ? '' : raw).trim();
+
+            if (!text) {                                  /* 清空 = 透明背景 */
+                setBg('');
+                return true;
+            }
+
+            const c = parseSingleColor(text);
+            if (!c) return false;
+
+            if (c.r === 0 && c.g === 0 && c.b === 0 && c.a === 0) {   /* transparent */
+                setBg('');
+                return true;
+            }
+
+            /* 显式写了 alpha 就沿用；否则上次是透明则给满不透明度，其余保留当前值 */
+            bgA = c.explicitA ? c.a : (!bgHex ? 1 : (bgA <= 0 ? 1 : bgA));
+            bgHex = normHex(toHex(c.r, c.g, c.b));
+            applyBg();
+            return true;
+        }
+
+        /* ── Slider → UI ── */
+        function syncSliders() {
+            curR = +sR.value; curG = +sG.value; curB = +sB.value; curA = +sA.value / 100;
+            vR.textContent = curR;
+            vG.textContent = curG;
+            vB.textContent = curB;
+            vA.textContent = curA.toFixed(2);
+
+            preview.style.backgroundColor = `rgba(${curR},${curG},${curB},${curA})`;
+
+            sR.style.background = `linear-gradient(to right, rgb(0,${curG},${curB}), rgb(255,${curG},${curB}))`;
+            sG.style.background = `linear-gradient(to right, rgb(${curR},0,${curB}), rgb(${curR},255,${curB}))`;
+            sB.style.background = `linear-gradient(to right, rgb(${curR},${curG},0), rgb(${curR},${curG},255))`;
+            sA.style.background = `linear-gradient(to right, rgba(${curR},${curG},${curB},0), rgba(${curR},${curG},${curB},1))`;
+
+            renderPreviewText();
+            renderFormats();
+            scheduleCardUpdate();   /* 拖动中不重建色卡，停手后再刷新 */
+        }
+
+        function loadToSliders(r, g, b, a) {
+            sR.value = r; sG.value = g; sB.value = b; sA.value = Math.round(a * 100);
+            syncSliders();
+        }
+
+        function renderFormats() {
+            const hex = toHex(curR, curG, curB).toUpperCase();
+            const hsl = rgbToHsl(curR, curG, curB);
+            const hsv = rgbToHsv(curR, curG, curB);
+            const hwb = rgbToHwb(curR, curG, curB);
+            const fmts = [
+                ['HEX', hex],
+                ['RGB', `rgb(${curR}, ${curG}, ${curB})`],
+                ['RGBA', `rgba(${curR}, ${curG}, ${curB}, ${roundA(curA)})`],
+                ['HSL', `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`],
+                ['HSLA', `hsla(${hsl.h}, ${hsl.s}%, ${hsl.l}%, ${roundA(curA)})`],
+                ['HSV', `hsv(${hsv.h}, ${hsv.s}%, ${hsv.v}%)`],
+                ['HWB', `hwb(${hwb.h}, ${hwb.w}%, ${hwb.b}%)`],
+            ];
+            if (curA < 1) fmts.push(['HEX8', toHex8(curR, curG, curB, curA).toUpperCase()]);
+
+            fmtList.innerHTML = fmts.map(([k, v]) =>
+                `<div class="format-item" data-cv="${v}" title="点击复制 ${v}"><span class="format-key">${k}</span><span class="format-val">${v}</span><span class="format-cop">⧉</span></div>`
+            ).join('');
+        }
+
+        /* ── Copy / Toast ── */
+        const esc = s => String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+        function legacyCopy(t) {
+            const ta = document.createElement('textarea');
+            ta.value = t;
+            ta.style.cssText = 'position:fixed;left:-9999px';
+            document.body.appendChild(ta);
+            try {
+                ta.select();
+                if (document.execCommand) document.execCommand('copy');
+            } catch { /* 环境不支持 execCommand 时静默跳过 */ }
+            finally { document.body.removeChild(ta); }
+        }
+
+        function copyText(t) {
+            const short = t.length > 60 ? t.slice(0, 60) + '…' : t;
+            const done = () => showToast('已复制: ' + short);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t).then(done).catch(() => { legacyCopy(t); done(); });
+            } else {
+                legacyCopy(t); done();
+            }
+        }
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+        }
+
+        /* ── Live chips (input visualization) ── */
+        function renderChips() {
+            if (!lastColors.length) {
+                chipsWrap.innerHTML = '<div class="chips-empty">输入后在此实时预览识别结果，点击色块可复制</div>';
+                return;
+            }
+            chipsWrap.innerHTML = lastColors.map(c => {
+                const bg = `rgba(${c.r},${c.g},${c.b},${c.a})`;
+                return `<div class="chip" data-copy="${esc(c.raw)}" title="点击复制 ${esc(c.raw)}">
+                    <span class="chip-swatch"><i style="background:${bg}"></i></span>
+                    <span class="chip-type">${c.type}</span>
+                    <span class="chip-val">${esc(c.raw)}</span>
+                </div>`;
+            }).join('');
+        }
+
+        /* ── Input → Output ── */
+        let debounce;
+        inp.addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(processInput, 120); });
+
+        /* 色卡渲染的防抖：拖动调色板时每帧重建 DOM 太费，停手 300ms 后再刷新 */
+        const CARD_DEBOUNCE = 300;
+        let cardTimer = null;
+        let renderedSig = null;            /* 已渲染内容的签名 */
+        let renderedColorSig = null;       /* 已渲染颜色（决定是否需要整块重建） */
+
+        function styleSig() { return shadowOn ? shadowStyle : 'off'; }
+
+        /* 颜色 + 样式签名 */
+        function cardSig() { return colorSig() + `#${bgHex}#${bgA}#${pvTextVal}#${styleSig()}`; }
+
+        /* 只有颜色决定 DOM 结构，其余（背景/文字/阴影）都能就地改 */
+        function colorSig() { return lastColors.map(c => `${c.r},${c.g},${c.b},${c.a}`).join('|'); }
+
+        /* DOM 改完后同步签名，避免下次误判为"没变化" */
+        function commitSig() {
+            renderedSig = cardSig();
+            renderedColorSig = colorSig();
+        }
+
+        function scheduleCardUpdate() {
+            clearTimeout(cardTimer);
+            cardTimer = setTimeout(() => {
+                cardTimer = null;
+                if (!lastColors.length) return;
+                /* 颜色没变时只同步文字/阴影/背景，避免整块重建重放动画 */
+                if (colorSig() === renderedColorSig) syncCards();
+                else paintCards();
+            }, CARD_DEBOUNCE);
+        }
+
+        /* 解析输入并刷新徽标/色块（不渲染色卡，色卡交给 paintCards） */
+        function processInput() {
+            clearTimeout(cardTimer);
+            cardTimer = null;
+            const text = inp.value;
+            lastColors = text.trim() ? parseColors(text) : [];
+            const n = lastColors.length;
+            badge.textContent = n ? `${n} 个颜色` : '';
+            badge.classList.toggle('hit', n > 0);
+            inBadge.textContent = n ? `识别 ${n} 个` : '';
+            inBadge.classList.toggle('hit', n > 0);
+            renderChips();
+
+            if (!text.trim()) {
+                renderedSig = renderedColorSig = null;
+                grid.innerHTML = '<div class="output-empty">在上方输入颜色代码，解析结果将显示在此处</div>';
+                return;
+            }
+            if (!n) {
+                renderedSig = renderedColorSig = null;
+                grid.innerHTML = '<div class="output-empty">未识别到有效的颜色代码</div>';
+                return;
+            }
+
+            /* 颜色没变：只同步文字/阴影/背景，不重建 DOM（也就不会重放动画） */
+            if (colorSig() === renderedColorSig) { syncCards(); return; }
+            paintCards();
+        }
+        /* 完整重建色卡（带入场动画） */
+        function paintCards() {
+            grid.innerHTML = lastColors.map((c, i) => {
+                const lb = cardLabelCss(c.r, c.g, c.b);
+                const bg = `rgba(${c.r},${c.g},${c.b},${c.a})`;
+                const delay = Math.min(i * 0.04, 0.5).toFixed(2);
+                const txt = pvTextVal || DEFAULT_PV_TEXT;
+                const hasBg = !!(bgHex && bgA > 0);
+                const bgTag = hasBg
+                    ? `<span class="card-bg-tag"><i style="background:${bgCss()}"></i>背景 ${esc(bgLabel())}</span>`
+                    : '';
+                return `<div class="color-card" style="animation-delay:${delay}s" data-r="${c.r}" data-g="${c.g}" data-b="${c.b}" data-a="${c.a}" data-copy="${esc(c.raw)}" title="${esc(c.raw)} · 单击复制 / 双击载入调色板 / 右键设为背景色">
+                    ${c.a < 1 && !hasBg ? '<div class="card-checker"></div>' : ''}
+                    <div class="card-fill" style="background:${bg}"></div>
+                    ${hasBg ? `<div class="card-bg" style="background:${bgCss()}"></div>` : ''}
+                    <button class="card-copy">复制</button>
+                    ${bgTag}
+                    <span class="card-label${lb.cls ? ' ' + lb.cls : ''}" data-shadow="${shadowOn ? shadowStyle : 'off'}" style="color:${lb.color}" title="${esc(c.display)} · 预览文字：${esc(txt)}">${esc(txt)}</span>
+                </div>`;
+            }).join('');
+            commitSig();
+        }
+
+        /* 颜色不变、只更新文字/阴影/背景这类样式（不重建 DOM，也就不会重放动画） */
+        function syncCards() {
+            const hasBg = !!(bgHex && bgA > 0);
+            const txt = pvTextVal || DEFAULT_PV_TEXT;
+            const mode = shadowOn ? shadowStyle : 'off';
+            grid.querySelectorAll('.color-card').forEach((card, i) => {
+                const c = lastColors[i];
+                if (!c) return;
+                const lb = cardLabelCss(c.r, c.g, c.b);
+                const fill = card.querySelector('.card-fill');
+                if (fill) fill.style.background = `rgba(${c.r},${c.g},${c.b},${c.a})`;
+                let bgEl = card.querySelector('.card-bg');
+                if (hasBg && !bgEl) {
+                    bgEl = document.createElement('div');
+                    bgEl.className = 'card-bg';
+                    card.insertBefore(bgEl, card.querySelector('.card-label'));
+                } else if (!hasBg && bgEl) {
+                    bgEl.remove();
+                }
+                if (bgEl) bgEl.style.background = bgCss();
+                const label = card.querySelector('.card-label');
+                if (label) {
+                    label.textContent = txt;
+                    label.style.color = lb.color;
+                    label.className = 'card-label' + (lb.cls ? ' ' + lb.cls : '');
+                    label.dataset.shadow = mode;
+                    label.title = `${c.display} · 预览文字：${txt}`;
+                }
+            });
+            commitSig();
+        }
+
+        /* ── Grid interactions: click = copy, dblclick = load to sliders ── */
+        grid.addEventListener('click', e => {
+            const copyBtn = e.target.closest('.card-copy');
+            if (copyBtn) { copyText(copyBtn.closest('.color-card').dataset.copy); return; }
+            const card = e.target.closest('.color-card');
+            if (!card) return;
+            clearTimeout(dblTimer);
+            dblTimer = setTimeout(() => copyText(card.dataset.copy), 260);
+        });
+
+        grid.addEventListener('dblclick', e => {
+            const card = e.target.closest('.color-card');
+            if (!card) return;
+            clearTimeout(dblTimer);
+            loadToSliders(+card.dataset.r, +card.dataset.g, +card.dataset.b, +card.dataset.a);
+            showToast('已载入调色板: ' + toHex(+card.dataset.r, +card.dataset.g, +card.dataset.b).toUpperCase());
+        });
+
+        /* 右键卡片 = 把该颜色设为预览背景色 */
+        grid.addEventListener('contextmenu', e => {
+            const card = e.target.closest('.color-card');
+            if (!card) return;
+            e.preventDefault();
+            setBg(toHex(+card.dataset.r, +card.dataset.g, +card.dataset.b));
+            processInput();
+            showToast('已设为背景色: ' + bgLabel());
+        });
+
+        /* ── Chips: click = copy ── */
+        chipsWrap.addEventListener('click', e => {
+            const chip = e.target.closest('.chip');
+            if (chip) copyText(chip.dataset.copy);
+        });
+
+        /* ── Sidebar format list / preview copy ── */
+        fmtList.addEventListener('click', e => {
+            const item = e.target.closest('.format-item');
+            if (item) copyText(item.dataset.cv);
+        });
+
+        [previewWrap, previewCopy].forEach(el => el.addEventListener('click', () => {
+            copyText(toHex(curR, curG, curB).toUpperCase());
+        }));
+
+        /* ── Preview text & background controls ── */
+        let pvDebounce;
+        pvText.addEventListener('input', () => {
+            clearTimeout(pvDebounce);
+            pvDebounce = setTimeout(() => {
+                pvTextVal = pvText.value.trim() || DEFAULT_PV_TEXT;
+                renderPreviewText();
+                if (lastColors.length) scheduleCardUpdate();
+            }, 100);
+        });
+
+        bgSwatches.addEventListener('click', e => {
+            const b = e.target.closest('.bg-swatch');
+            if (!b) return;
+            setBg(b.dataset.bg || '');
+            if (lastColors.length) scheduleCardUpdate();
+            showToast(`背景色: ${bgLabel()}`);
+        });
+
+        /* 文本输入背景色：HEX / RGB / RGBA / HSL / HWB / HSV / 颜色名 */
+        bgText.addEventListener('focus', () => { bgEditing = true; });
+
+        bgText.addEventListener('input', () => {
+            const txt = bgText.value.trim();
+            const okParse = updateBgFromText(txt);
+            bgText.classList.toggle('invalid', !!txt && !okParse);
+            if (lastColors.length) scheduleCardUpdate();
+        });
+
+        bgText.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); bgText.blur(); }
+        });
+
+        bgText.addEventListener('blur', () => {
+            /* 失焦时把可解析的写法回显成规范值，写错则标灰 */
+            bgEditing = false;
+            const txt = bgText.value.trim();
+            if (!txt) { setBg(''); clearTimeout(cardTimer); cardTimer = null; if (lastColors.length) syncCards(); return; }
+            if (updateBgFromText(txt)) {
+                bgText.value = bgHex
+                    ? (bgA < 1 ? toHexA(hexToRgb(bgHex).r, hexToRgb(bgHex).g, hexToRgb(bgHex).b, bgA) : bgHex)
+                    : '';
+                bgText.classList.remove('invalid');
+            } else {
+                bgText.classList.add('invalid');
+            }
+        });
+
+        /* 文字色输入：HEX / RGB / RGBA / HSL / HWB / HSV / 颜色名 */
+        fgText.addEventListener('focus', () => { fgEditing = true; });
+
+        fgText.addEventListener('input', () => {
+            const txt = fgText.value.trim();
+            const c = parseSingleColor(txt);
+            if (c) {
+                curA = c.r === 0 && c.g === 0 && c.b === 0 && c.a === 0 ? 0 : (c.explicitA ? c.a : curA);
+                sA.value = Math.round(curA * 100);
+                sR.value = c.r; sG.value = c.g; sB.value = c.b;
+                fgText.classList.remove('invalid');
+                syncSliders();          /* 内部已安排色卡防抖刷新 */
+            } else {
+                fgText.classList.toggle('invalid', !!txt);
+            }
+        });
+
+        fgText.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); fgText.blur(); }
+        });
+
+        fgText.addEventListener('blur', () => {
+            fgEditing = false;
+            if (!fgText.value.trim() || parseSingleColor(fgText.value)) {
+                fgText.value = toHex(curR, curG, curB).toUpperCase();
+                fgText.classList.remove('invalid');
+            }
+        });
+
+        fgPicker.addEventListener('input', () => {
+            const c = parseHex(fgPicker.value);
+            if (!c) return;
+            curA = curA <= 0 ? 1 : curA;
+            sA.value = Math.round(curA * 100);
+            sR.value = c.r; sG.value = c.g; sB.value = c.b;
+            syncSliders();              /* 内部已安排色卡防抖刷新 */
+        });
+
+        bgPicker.addEventListener('input', () => {
+            bgHex = normHex(bgPicker.value);
+            if (bgA <= 0) bgA = 1;
+            applyBg();
+            if (lastColors.length) scheduleCardUpdate();
+        });
+
+        bgAInput.addEventListener('input', () => {
+            bgA = +bgAInput.value / 100;
+            applyBg();
+            if (lastColors.length) scheduleCardUpdate();
+        });
+
+        /* ── 阴影开关（预览与色卡同时生效，便于对比可读性） ── */
+        shToggle.addEventListener('click', () => {
+            shadowOn = !shadowOn;
+            applyShadow();
+            if (lastColors.length) syncCards();   /* 同步签名，避免下次误判为"无变化" */
+            updateWarn();
+            showToast(`文字阴影: ${shadowOn ? '开' : '关'}`);
+        });
+
+        shStyle.addEventListener('change', () => {
+            shadowStyle = shStyle.value;
+            if (!shadowOn) { shadowOn = true; showToast('已开启文字阴影'); }
+            applyShadow();
+            if (lastColors.length) syncCards();
+        });
+
+        /* ── Toolbar buttons ── */
+        btnPaste.addEventListener('click', async () => {
+            try {
+                const t = await navigator.clipboard.readText();
+                inp.value = t;
+                processInput();
+                showToast(`已粘贴 ${t.split(/\r?\n/).length} 行内容`);
+            } catch {
+                showToast('无法读取剪贴板，请点击输入框后 Ctrl+V');
+            }
+        });
+
+        btnSample.addEventListener('click', () => {
+            inp.value = `#66ccff\nrgb(255, 128, 0)\nrgba(0, 0, 0, 0.5)\n#f00\n#336699cc\nff8800\nrgb(100% 0% 0%)\nhsl(280, 60%, 50%)\nhsla(120 50% 50% / 0.3)\nhwb(220, 40%, 20%)\nhsv(200, 80%, 90%)\ntomato\ntransparent`;
+            processInput();
+        });
+
+        btnClear.addEventListener('click', () => {
+            inp.value = '';
+            processInput();
+        });
+
+        function fmtOf(c, f) {
+            switch (f) {
+                case 'RGB':
+                    return `rgb(${c.r}, ${c.g}, ${c.b})`;
+                case 'RGBA':
+                    return `rgba(${c.r}, ${c.g}, ${c.b}, ${roundA(c.a)})`;
+                case 'HSL': {
+                    const h = rgbToHsl(c.r, c.g, c.b);
+                    return `hsl(${h.h}, ${h.s}%, ${h.l}%)`;
+                }
+                default:
+                    return toHex(c.r, c.g, c.b).toUpperCase();
+            }
+        }
+
+        btnCopyAll.addEventListener('click', () => {
+            if (!lastColors.length) { showToast('暂无可复制的颜色'); return; }
+            const lines = lastColors.map(c => fmtOf(c, fmtSel.value));
+            copyText(lines.join('\n'));
+        });
+
+        /* ── Init ── */
+        [sR, sG, sB, sA].forEach(s => s.addEventListener('input', syncSliders));
+        pvText.value = pvTextVal;
+        shStyle.value = shadowStyle;
+        syncSliders();
+        setBg('#ead3ad');   /* 默认背景色 #EAD3AD，便于直接看文字色搭配效果 */
+        applyBg();
+        applyShadow();
+
+        inp.value = `#66ccff\nrgb(255, 128, 0)\nrgba(0, 0, 0, 0.5)\n#f00\n#336699cc\nff8800\nrgb(100% 0% 0%)\nhsl(280, 60%, 50%)\nhsla(120 50% 50% / 0.3)\nhwb(220, 40%, 20%)\nhsv(200, 80%, 90%)\ntomato\ntransparent`;
+        processInput();
+    })();
+    </script>
+</body>
+</html>
