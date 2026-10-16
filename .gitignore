@@ -1,0 +1,17 @@
+# 运行时目录内容不入库（目录本身由使用方按需创建）
+cache/*
+preview/*
+!cache/.gitkeep
+!preview/.gitkeep
+
+# 依赖与构建产物
+node_modules/
+dist/
+*.log
+*.tmp
+
+# 本地提示词及约束
+agents.*.md
+agents.md
+claude.*.md
+claude.md

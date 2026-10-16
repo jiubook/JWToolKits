@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWToolKits — 工具集</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='2' width='12' height='12' rx='2' fill='%23f5c518'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #08080b;
+            --surface: #0e0e13;
+            --line: #1c1c24;
+            --accent: #f5c518;
+            --accent-dim: rgba(245, 197, 24, 0.12);
+            --text: #e4e0d6;
+            --text-muted: #6b665e;
+            --text-dim: #3a3832;
+            --mono: 'DM Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+            --serif: 'Instrument Serif', Georgia, serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--mono);
+            font-weight: 300;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5rem 1.5rem 4rem;
+        }
+
+        /* 极淡的网格背景，和子页面保持同一套视觉语言 */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(245, 197, 24, 0.022) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245, 197, 24, 0.022) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wrap { position: relative; z-index: 1; width: 100%; max-width: 1080px; }
+
+        header { margin-bottom: 3.5rem; }
+
+        .eyebrow {
+            font-size: 0.7rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-family: var(--serif);
+            font-size: clamp(2.4rem, 6vw, 3.6rem);
+            font-weight: 400;
+            line-height: 1.05;
+            letter-spacing: -0.01em;
+        }
+
+        h1 em { font-style: italic; color: var(--accent); }
+
+        .lede {
+            margin-top: 1.1rem;
+            max-width: 46ch;
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .stat {
+            margin-top: 1.6rem;
+            display: flex;
+            align-items: baseline;
+            gap: 0.6rem;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .stat b { color: var(--accent); font-weight: 400; font-size: 1rem; }
+
+        /* ---- 卡片网格：窄屏 1 列 / 中屏 2 列 / 宽屏 3 列 ---- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1px;
+            background: var(--line);
+            border: 1px solid var(--line);
+        }
+
+        .card {
+            position: relative;
+            background: var(--surface);
+            padding: 1.75rem 1.6rem;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            min-height: 190px;
+            transition: background 0.22s ease;
+        }
+
+        .card:hover, .card:focus-visible { background: #131319; outline: none; }
+
+        .card:focus-visible { box-shadow: inset 0 0 0 1px var(--accent); }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .num {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            letter-spacing: 0.12em;
+        }
+
+        .arrow {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            transition: transform 0.22s ease, color 0.22s ease;
+        }
+
+        .card:hover .arrow { color: var(--accent); transform: translate(3px, -3px); }
+
+        .card h2 {
+            font-family: var(--serif);
+            font-size: 1.5rem;
+            font-weight: 400;
+            line-height: 1.15;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            line-height: 1.7;
+            flex: 1;
+        }
+
+        .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+        .tag {
+            font-size: 0.63rem;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            border: 1px solid var(--line);
+            padding: 0.18rem 0.5rem;
+            white-space: nowrap;
+        }
+
+        .card:hover .tag { border-color: #26262f; color: var(--text-muted); }
+
+        footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--line);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+        }
+
+        footer code { color: var(--text-muted); }
+
+        /* 无 JS 时的兜底提示：manifest 说明它由脚本登记 */
+        .noscript {
+            margin-top: 2rem;
+            padding: 1rem 1.2rem;
+            border: 1px solid var(--line);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 480px) {
+            body { padding: 3rem 1rem 2.5rem; }
+            .card { min-height: 0; padding: 1.4rem 1.2rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <div class="eyebrow">Zero-build · Static · Offline-first</div>
+            <h1>JWToolKits<br><em>工具集</em></h1>
+            <p class="lede">
+                单文件网页工具集合：每个工具都是一个自包含的 HTML，
+                双击即用，不需要安装、不需要构建、不需要联网。
+            </p>
+            <div class="stat">
+                <b id="count">0</b><span>个工具 / 全部位于 <code>webs/</code></span>
+            </div>
+        </header>
+
+        <main class="grid" id="grid">
+            <!-- 卡片内容由下方 window.TOOLS 渲染；这里的静态卡片是无 JS 时的兜底 -->
+            <noscript>
+                <div class="noscript">
+                    本页依赖 JavaScript 渲染工具列表。请直接打开 <code>webs/</code> 目录下的页面。
+                </div>
+            </noscript>
+        </main>
+
+        <footer>
+            <span><code>webs/</code> 放页面 · <code>tests/</code> 放测试 · <code>cache/</code> 放缓存</span>
+            <span>新增页面后请同步登记到本文件顶部的 <code>window.TOOLS</code> 并运行 <code>node tests/verify-index.mjs</code></span>
+        </footer>
+    </div>
+
+    <script>
+        /**
+         * 工具清单 —— 本仓库网页的唯一事实源(single source of truth)。
+         *
+         * 约定：新增/删除 webs/ 下的页面后，必须同步更新本数组，
+         * 然后运行 `node tests/verify-index.mjs` 校验（它会比对磁盘实际文件）。
+         */
+        window.TOOLS = [
+            {
+                name: 'ColorKit',
+                desc: '色彩工具集。调色板生成、颜色格式互转、对比度与取色，粘贴色值即可用。',
+                tags: ['颜色', '调色板', '对比度'],
+                href: 'ColorKit色彩工具集.html'
+            },
+            {
+                name: 'TestArtGenerator',
+                desc: '文字艺术生成器。把普通文本转成装饰体、方块体、渐变体、点阵等字符画，可复制或下载为 txt。',
+                tags: ['字符画', '文本', '导出'],
+                href: 'TestArtGenerator文字艺术生成器.html'
+            },
+            {
+                name: 'srt2txt',
+                desc: '字幕转纯文本。读取 srt 字幕并剥离序号与时间轴，输出可直接使用的台词文本。',
+                tags: ['字幕', 'srt', '文本'],
+                href: 'srt2txt字幕文件转为纯文本.html'
+            },
+            {
+                name: 'CheckinReward',
+                desc: '签到连续奖励配置器。按天配置连续签到奖励梯度，生成配置文本，支持复制与下载。',
+                tags: ['配置', '签到', '导出'],
+                href: 'CheckinReward签到连续奖励配置.html'
+            }
+        ]
+
+        const grid = document.getElementById('grid')
+        const pad = (n) => String(n).padStart(2, '0')
+
+        window.TOOLS.forEach((tool, i) => {
+            const card = document.createElement('a')
+            card.className = 'card'
+            card.href = 'webs/' + tool.href
+            card.setAttribute('aria-label', tool.name + ' — ' + tool.desc)
+
+            const top = document.createElement('div')
+            top.className = 'card-top'
+            const num = document.createElement('span')
+            num.className = 'num'
+            num.textContent = pad(i + 1)
+            const arrow = document.createElement('span')
+            arrow.className = 'arrow'
+            arrow.textContent = '↗'
+            top.append(num, arrow)
+
+            const title = document.createElement('h2')
+            title.textContent = tool.name
+
+            const desc = document.createElement('p')
+            desc.textContent = tool.desc
+
+            const tags = document.createElement('div')
+            tags.className = 'tags'
+            ;(tool.tags || []).forEach((t) => {
+                const tag = document.createElement('span')
+                tag.className = 'tag'
+                tag.textContent = t
+                tags.append(tag)
+            })
+
+            card.append(top, title, desc, tags)
+            grid.append(card)
+        })
+
+        document.getElementById('count').textContent = window.TOOLS.length
+    </script>
+</body>
+</html>
